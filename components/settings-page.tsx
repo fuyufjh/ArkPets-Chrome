@@ -12,21 +12,24 @@ import {
 import { Trash2, Plus } from 'lucide-react'
 
 export default function SettingsPage() {
-  const [characters, setCharacters] = useState<string[]>(['Default Character'])
+  const getAvailableCharacters = () => ["佩佩", "荒芜拉普兰德"];
+  
+  const [characters, setCharacters] = useState<string[]>(['佩佩'])
+  const [availableCharacters] = useState<string[]>(getAvailableCharacters())
   const [speed, setSpeed] = useState<number>(1)
   const [allowDragging, setAllowDragging] = useState<boolean>(true)
   const [animationSpeed, setAnimationSpeed] = useState<string>('medium')
 
   const addCharacter = () => {
-    setCharacters([...characters, `Character ${characters.length + 1}`])
+    setCharacters([...characters, availableCharacters[0]])
   }
 
   const deleteCharacter = (index: number) => {
     setCharacters(characters.filter((_, i) => i !== index))
   }
 
-  const resetConfigurations = () => {
-    setCharacters(['Default Character'])
+  const resetAll = () => {
+    setCharacters(['佩佩'])
     setSpeed(1)
     setAllowDragging(true)
     setAnimationSpeed('medium')
@@ -53,7 +56,22 @@ export default function SettingsPage() {
           <div className="space-y-2">
             {characters.map((character, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <Input value={character} readOnly className="flex-grow" />
+                <Select value={character} onValueChange={(value) => {
+                  const newCharacters = [...characters];
+                  newCharacters[index] = value;
+                  setCharacters(newCharacters);
+                }}>
+                  <SelectTrigger className="flex-grow">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCharacters.map((char) => (
+                      <SelectItem key={char} value={char}>
+                        {char}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button variant="outline" size="icon" onClick={() => deleteCharacter(index)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -106,8 +124,8 @@ export default function SettingsPage() {
         {/* System Section */}
         <section id="system">
           <h2 className="text-2xl font-semibold mb-4">System</h2>
-          <Button variant="destructive" onClick={resetConfigurations}>
-            Reset All Configurations
+          <Button variant="destructive" onClick={resetAll}>
+            Reset All
           </Button>
         </section>
       </main>
