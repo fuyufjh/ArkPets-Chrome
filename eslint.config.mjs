@@ -7,15 +7,20 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
+  recommendedConfig: {},
 });
 
 const eslintConfig = [
   ...compat.config({
-    extends: ['next'],
+    extends: [
+      'eslint:recommended',
+      'plugin:@typescript-eslint/recommended'
+    ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "prefer-const": "off",
     },
-  }),];
+  }),
+];
 
 export default eslintConfig;
