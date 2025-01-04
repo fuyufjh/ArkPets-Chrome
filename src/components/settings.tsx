@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Switch } from "./ui/switch"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "./ui/select"
 import { Trash2, Plus } from 'lucide-react'
 
 interface CharacterResource {
