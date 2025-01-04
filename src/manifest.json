@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "ArkPets Chrome",
+  "description": "Shows Arknights characters on web pages",
+  "version": "1.0",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+} 

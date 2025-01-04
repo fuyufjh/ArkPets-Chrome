@@ -1,14 +1,17 @@
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 import { Configuration } from 'webpack';
-import _ from 'webpack-dev-server';
 
 const config: Configuration = {
-  entry: './src/index.tsx',
+  entry: {
+    popup: './src/index.tsx',
+    content: './src/content.ts'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js',
+    filename: '[name].js',
     clean: true,
   },
   module: {
@@ -53,19 +56,19 @@ const config: Configuration = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html',
+      filename: 'index.html',
+      chunks: ['popup']
     }),
     new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css',
+      filename: '[name].css',
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: "src/manifest.json", to: "manifest.json" },
+        { from: "ArkPets-Web/dist/bundle.js", to: "arkpets.js" },
+      ],
     }),
   ],
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'public'),
-    },
-    compress: true,
-    port: 3000,
-    hot: true,
-  },
 };
 
 export default config; 

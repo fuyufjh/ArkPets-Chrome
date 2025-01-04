@@ -38,7 +38,7 @@ declare global {
   }
 }
 
-const RESOURCE_PATH = "/assets/models/";
+const RESOURCE_PATH = "http://localhost:8000/assets/models/";
 
 const CHARACTER_RESOURCES = [
   {
