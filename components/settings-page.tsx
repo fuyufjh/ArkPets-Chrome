@@ -28,6 +28,7 @@ declare global {
         resourcePath: string
       ) => any;
       showContextMenu: any;
+      createContextMenu: any;
     };
     activeCharacters: {
       id: number;
@@ -124,6 +125,30 @@ export default function SettingsPage() {
 
     console.assert(window.activeCharacters.length === characters.length, "Active characters length mismatch");
   }, [characters])
+
+  useEffect(() => {
+    window.arkpets.createContextMenu(CHARACTER_RESOURCES, (canvasId: string, char: CharacterResource) => {
+      const id = parseInt(canvasId.replace('arkpets-character-', ''));
+      const character = window.activeCharacters.find(c => c.id === id);
+      if (character) {
+        character.instance.loadCharacterAssets(char);
+        setCharacters(characters.map(c => c.id === id ? {id, character: char} : c));
+      } else {
+        console.error(`Character with canvasId ${canvasId} not found`);
+      }
+    }, (canvasId: string) => {
+      const id = parseInt(canvasId.replace('arkpets-character-', ''));
+      const character = window.activeCharacters.find(c => c.id === id);
+      if (character) {
+        character.instance.fadeOut().then(() => {
+          character.instance.destroy();
+        });
+        setCharacters(characters.filter(c => c.id !== id));
+      } else {
+        console.error(`Character with canvasId ${canvasId} not found`);
+      }
+    });
+  }, [])
 
   return (
     <div className="flex min-h-screen bg-background">
