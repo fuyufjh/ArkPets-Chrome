@@ -43,18 +43,24 @@ interface CharacterItem {
 export default function Settings() {
   const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
   
-  const [characters, setCharacters] = useState<CharacterItem[]>([{id: Date.now(), character: getAvailableCharacters()[0]}])
+  const [characters, setCharacters] = useState<CharacterItem[]>()
   const [availableCharacters] = useState<CharacterResource[]>(getAvailableCharacters())
   const [speed, setSpeed] = useState<number>(1)
   const [allowDragging, setAllowDragging] = useState<boolean>(true)
   const [animationSpeed, setAnimationSpeed] = useState<string>('medium')
 
   const addCharacter = () => {
+    if (!characters) {
+      return; // Initializing
+    }
     let id = Date.now(); // Use timestamp (ms) as identifier
     setCharacters([...characters, {id, character: availableCharacters[0]}])
   }
 
   const deleteCharacter = (id: number) => {
+    if (!characters) {
+      return; // Initializing
+    }
     setCharacters(characters.filter((item) => item.id !== id))
   }
 
@@ -66,34 +72,34 @@ export default function Settings() {
   }
 
   useEffect(() => {
+    // Load characters from storage
+    chrome.storage.local.get(null, (result) => {
+      if (result.characters) {
+        setCharacters(JSON.parse(result.characters));
+      } else {
+        setCharacters([{id: Date.now(), character: getAvailableCharacters()[0]}]);
+      }
+    });
+  }, [])
+
+  useEffect(() => {
     chrome.storage.local.set({characters: JSON.stringify(characters)});
   }, [characters])
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar for wider screens */}
-      <aside className="hidden w-64 p-6 border-r lg:block">
-        <nav className="space-y-2">
-          <a href="#characters" className="block py-2 text-sm font-medium hover:text-primary">Characters</a>
-          <a href="#motion" className="block py-2 text-sm font-medium hover:text-primary">Motion</a>
-          <a href="#system" className="block py-2 text-sm font-medium hover:text-primary">System</a>
-        </nav>
-      </aside>
-
       {/* Main content */}
       <main className="flex-1 p-6 space-y-8">
-        <h1 className="text-3xl font-bold">Plugin Settings</h1>
-
         {/* Characters Section */}
         <section id="characters">
           <h2 className="text-2xl font-semibold mb-4">Characters</h2>
           <div className="space-y-2">
-            {characters.map((item) => (
+            {(characters || []).map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
                 <Select 
                   value={item.character.name} 
                   onValueChange={(selectedName) => {
-                    const newCharacters = [...characters];
+                    const newCharacters = [...characters!];
                     const selectedItem = newCharacters.find(c => c.id === item.id)!
                     selectedItem.character = availableCharacters.find(c => c.name === selectedName)!;
                     setCharacters(newCharacters);

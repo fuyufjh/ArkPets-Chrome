@@ -49,17 +49,21 @@ const CHARACTER_RESOURCES = [
 export {};
 
 chrome.storage.local.onChanged.addListener((changes) => {
-  updateCharacterDisplay(changes);
+  if (changes.characters) {
+    setCharacters(JSON.parse(changes.characters.newValue));
+  }
 });
 
 // Initial setup when content script loads
 chrome.storage.local.get(null, (settings) => {
-  updateCharacterDisplay(settings);
+  if (settings.characters) {
+    setCharacters(JSON.parse(settings.characters));
+  } else {
+    chrome.storage.local.set({characters: JSON.stringify([{id: Date.now(), character: CHARACTER_RESOURCES[0]}])});
+  }
 });
 
-function updateCharacterDisplay(changes: { [key: string]: chrome.storage.StorageChange }) {
-  const characters: CharacterItem[] = JSON.parse(changes.characters.newValue);
-
+function setCharacters(characters: CharacterItem[]) {
   // Keep the active characters in another JS variables to avoid re-creating all characters
   if (!window.activeCharacters) {
     window.activeCharacters = [];
