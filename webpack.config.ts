@@ -5,6 +5,7 @@ import CopyPlugin from 'copy-webpack-plugin';
 import { Configuration } from 'webpack';
 
 const config: Configuration = {
+  devtool: "source-map",
   entry: {
     popup: './src/index.tsx',
     content: './src/content.ts'

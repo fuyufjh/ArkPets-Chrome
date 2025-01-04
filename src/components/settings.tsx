@@ -11,6 +11,21 @@ import {
 } from "./ui/select"
 import { Trash2, Plus } from 'lucide-react'
 import { CharacterResource, CharacterItem, CHARACTER_RESOURCES } from '../common'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./ui/popover"
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from "./ui/utils"
 
 export default function Settings() {
   const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
@@ -68,26 +83,48 @@ export default function Settings() {
           <div className="space-y-2">
             {(characters || []).map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
-                <Select 
-                  value={item.character.name} 
-                  onValueChange={(selectedName) => {
-                    const newCharacters = [...characters!];
-                    const selectedItem = newCharacters.find(c => c.id === item.id)!
-                    selectedItem.character = availableCharacters.find(c => c.name === selectedName)!;
-                    setCharacters(newCharacters);
-                  }}
-                >
-                  <SelectTrigger className="flex-grow">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableCharacters.map((char) => (
-                      <SelectItem key={char.name} value={char.name}>
-                        {char.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="flex-grow justify-between"
+                    >
+                      {item.character.name}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search character..." />
+                      <CommandList>
+                        <CommandEmpty>No character found.</CommandEmpty>
+                        <CommandGroup>
+                          {availableCharacters.map((char) => (
+                            <CommandItem
+                              key={char.name}
+                              value={char.name}
+                              onSelect={(selectedName) => {
+                                const newCharacters = [...characters!];
+                                const selectedItem = newCharacters.find(c => c.id === item.id)!
+                                selectedItem.character = availableCharacters.find(c => c.name === selectedName)!;
+                                setCharacters(newCharacters);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  item.character.name === char.name ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {char.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <Button variant="outline" size="icon" onClick={() => deleteCharacter(item.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>

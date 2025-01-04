@@ -4,18 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "webpack serve --mode development",
+    "dev:watch": "webpack --watch --mode development",
     "build": "webpack --mode production",
     "lint": "eslint src"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.4",
+    "@radix-ui/react-popover": "^1.1.4",
     "@radix-ui/react-select": "^2.1.4",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-switch": "^1.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.0",
     "lucide-react": "^0.469.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18",
+    "react-dom": "^18",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "webextension-polyfill": "^0.12.0"
@@ -23,8 +27,8 @@
   "devDependencies": {
     "@types/chrome": "^0.0.289",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "@types/webextension-polyfill": "^0.12.1",
     "autoprefixer": "^10.4.14",
     "copy-webpack-plugin": "^11.0.0",
