@@ -2,6 +2,7 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { Configuration } from 'webpack';
+import _ from 'webpack-dev-server';
 
 const config: Configuration = {
   entry: './src/index.tsx',
