@@ -88,14 +88,23 @@ export default function SettingsPage() {
     if (!window.activeCharacters) {
       window.activeCharacters = [];
     }
-    let addedCharacters = characters.filter(character => !window.activeCharacters.some(c => c.id === character.id && c.name === character.character.name));
-    let removedCharacters = window.activeCharacters.filter(character => !characters.some(c => c.id === character.id && c.character.name === character.name));
-    
+    let addedCharacters = characters.filter(character => !window.activeCharacters.some(c => c.id === character.id));
+    let removedCharacters = window.activeCharacters.filter(character => !characters.some(c => c.id === character.id));
+    let updatedCharacters = characters.filter(character => window.activeCharacters.some(c => c.id === character.id && c.name !== character.character.name));
+
     removedCharacters.forEach(character => {
       const index = window.activeCharacters.findIndex(c => c.id === character.id);
       if (index !== -1) {
         window.activeCharacters[index].instance.destroy();
         window.activeCharacters.splice(index, 1);
+      }
+    })
+
+    updatedCharacters.forEach(character => {
+      const index = window.activeCharacters.findIndex(c => c.id === character.id);
+      if (index !== -1) {
+        window.activeCharacters[index].name = character.character.name;
+        window.activeCharacters[index].instance.loadCharacterAssets(character.character);
       }
     })
 
