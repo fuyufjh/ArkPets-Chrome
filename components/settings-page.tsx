@@ -86,6 +86,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
+    // Keep the active characters in another JS variables to avoid re-creating all characters
     if (!window.activeCharacters) {
       window.activeCharacters = [];
     }
@@ -96,7 +97,10 @@ export default function SettingsPage() {
     removedCharacters.forEach(character => {
       const index = window.activeCharacters.findIndex(c => c.id === character.id);
       if (index !== -1) {
-        window.activeCharacters[index].instance.destroy();
+        let instance = window.activeCharacters[index].instance
+        instance.fadeOut().then(() => {
+          instance.destroy();
+        });
         window.activeCharacters.splice(index, 1);
         console.log(`Character ${character.id} deleted`);
       }
