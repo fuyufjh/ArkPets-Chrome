@@ -60,7 +60,7 @@ interface CharacterItem {
   character: CharacterResource;
 }
 
-export default function SettingsPage() {
+export default function Settings() {
   const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
   
   const [characters, setCharacters] = useState<CharacterItem[]>([{id: Date.now(), character: getAvailableCharacters()[0]}])
@@ -162,7 +162,7 @@ export default function SettingsPage() {
         <section id="characters">
           <h2 className="text-2xl font-semibold mb-4">Characters</h2>
           <div className="space-y-2">
-            {characters.map((item, _) => (
+            {characters.map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
                 <Select 
                   value={item.character.name} 
