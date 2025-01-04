@@ -63,7 +63,7 @@ interface CharacterItem {
 export default function SettingsPage() {
   const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
   
-  const [characters, setCharacters] = useState<CharacterItem[]>([{id: 0, character: getAvailableCharacters()[0]}])
+  const [characters, setCharacters] = useState<CharacterItem[]>([{id: Date.now(), character: getAvailableCharacters()[0]}])
   const [availableCharacters] = useState<CharacterResource[]>(getAvailableCharacters())
   const [speed, setSpeed] = useState<number>(1)
   const [allowDragging, setAllowDragging] = useState<boolean>(true)
@@ -98,6 +98,7 @@ export default function SettingsPage() {
       if (index !== -1) {
         window.activeCharacters[index].instance.destroy();
         window.activeCharacters.splice(index, 1);
+        console.log(`Character ${character.id} deleted`);
       }
     })
 
@@ -106,6 +107,7 @@ export default function SettingsPage() {
       if (index !== -1) {
         window.activeCharacters[index].name = character.character.name;
         window.activeCharacters[index].instance.loadCharacterAssets(character.character);
+        console.log(`Character ${character.id} updated`);
       }
     })
 
@@ -121,6 +123,7 @@ export default function SettingsPage() {
         name: character.character.name,
         instance: instance
       });
+      console.log(`Character ${character.id} added`);
     })
 
     console.assert(window.activeCharacters.length === characters.length, "Active characters length mismatch");
@@ -129,24 +132,10 @@ export default function SettingsPage() {
   useEffect(() => {
     window.arkpets.createContextMenu(CHARACTER_RESOURCES, (canvasId: string, char: CharacterResource) => {
       const id = parseInt(canvasId.replace('arkpets-character-', ''));
-      const character = window.activeCharacters.find(c => c.id === id);
-      if (character) {
-        character.instance.loadCharacterAssets(char);
-        setCharacters(characters.map(c => c.id === id ? {id, character: char} : c));
-      } else {
-        console.error(`Character with canvasId ${canvasId} not found`);
-      }
+      setCharacters((characters) => characters.map(c => c.id === id ? {id, character: char} : c));
     }, (canvasId: string) => {
       const id = parseInt(canvasId.replace('arkpets-character-', ''));
-      const character = window.activeCharacters.find(c => c.id === id);
-      if (character) {
-        character.instance.fadeOut().then(() => {
-          character.instance.destroy();
-        });
-        setCharacters(characters.filter(c => c.id !== id));
-      } else {
-        console.error(`Character with canvasId ${canvasId} not found`);
-      }
+      setCharacters((characters) => characters.filter(c => c.id !== id));
     });
   }, [])
 
