@@ -1,14 +1,4 @@
-interface CharacterResource {
-  name: string;
-  skeleton: string;
-  atlas: string;
-  texture: string;
-}
-
-interface CharacterItem {
-  id: number;
-  character: CharacterResource;
-}
+import { CharacterResource, CharacterItem, CHARACTER_RESOURCES, RESOURCE_PATH } from './common'
 
 declare global {
   interface Window {
@@ -29,22 +19,6 @@ declare global {
     }[];
   }
 }
-
-const RESOURCE_PATH = "http://localhost:8000/assets/models/";
-const CHARACTER_RESOURCES = [
-  {
-    name: "佩佩",
-    skeleton: "4058_pepe/build_char_4058_pepe.skel",
-    atlas: "4058_pepe/build_char_4058_pepe.atlas",
-    texture: "4058_pepe/build_char_4058_pepe.png",
-  },
-  {
-    name: "荒芜拉普兰德",
-    skeleton: "1038_whitw2/build_char_1038_whitw2.skel",
-    atlas: "1038_whitw2/build_char_1038_whitw2.atlas",
-    texture: "1038_whitw2/build_char_1038_whitw2.png",
-  }
-];
 
 export {};
 
