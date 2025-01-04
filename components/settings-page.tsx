@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -11,29 +11,110 @@ import {
 } from "@/components/ui/select"
 import { Trash2, Plus } from 'lucide-react'
 
+interface CharacterResource {
+  name: string;
+  skeleton: string;
+  atlas: string;
+  texture: string;
+}
+
+declare global {
+  interface Window {
+    arkpets: {
+      Character: new (
+        elementId: string,
+        contextMenuCallback: any,
+        characterResource: CharacterResource,
+        resourcePath: string
+      ) => any;
+      showContextMenu: any;
+    };
+    activeCharacters: {
+      id: number;
+      name: string;
+      instance: any;
+    }[];
+  }
+}
+
+const RESOURCE_PATH = "/assets/models/";
+
+const CHARACTER_RESOURCES = [
+  {
+    name: "佩佩",
+    skeleton: "4058_pepe/build_char_4058_pepe.skel",
+    atlas: "4058_pepe/build_char_4058_pepe.atlas",
+    texture: "4058_pepe/build_char_4058_pepe.png",
+  },
+  {
+    name: "荒芜拉普兰德",
+    skeleton: "1038_whitw2/build_char_1038_whitw2.skel",
+    atlas: "1038_whitw2/build_char_1038_whitw2.atlas",
+    texture: "1038_whitw2/build_char_1038_whitw2.png",
+  }
+];
+
+interface CharacterItem {
+  id: number;
+  character: CharacterResource;
+}
+
 export default function SettingsPage() {
-  const getAvailableCharacters = () => ["佩佩", "荒芜拉普兰德"];
+  const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
   
-  const [characters, setCharacters] = useState<string[]>(['佩佩'])
-  const [availableCharacters] = useState<string[]>(getAvailableCharacters())
+  const [characters, setCharacters] = useState<CharacterItem[]>([{id: 0, character: getAvailableCharacters()[0]}])
+  const [availableCharacters] = useState<CharacterResource[]>(getAvailableCharacters())
   const [speed, setSpeed] = useState<number>(1)
   const [allowDragging, setAllowDragging] = useState<boolean>(true)
   const [animationSpeed, setAnimationSpeed] = useState<string>('medium')
 
   const addCharacter = () => {
-    setCharacters([...characters, availableCharacters[0]])
+    let id = Date.now(); // Use timestamp (ms) as identifier
+    setCharacters([...characters, {id, character: availableCharacters[0]}])
   }
 
-  const deleteCharacter = (index: number) => {
-    setCharacters(characters.filter((_, i) => i !== index))
+  const deleteCharacter = (id: number) => {
+    setCharacters(characters.filter((item) => item.id !== id))
   }
 
   const resetAll = () => {
-    setCharacters(['佩佩'])
-    setSpeed(1)
-    setAllowDragging(true)
-    setAnimationSpeed('medium')
+    setCharacters([{id: 0, character: getAvailableCharacters()[0]}]);
+    setSpeed(1);
+    setAllowDragging(true);
+    setAnimationSpeed('medium');
   }
+
+  useEffect(() => {
+    if (!window.activeCharacters) {
+      window.activeCharacters = [];
+    }
+    let addedCharacters = characters.filter(character => !window.activeCharacters.some(c => c.id === character.id && c.name === character.character.name));
+    let removedCharacters = window.activeCharacters.filter(character => !characters.some(c => c.id === character.id && c.character.name === character.name));
+    
+    removedCharacters.forEach(character => {
+      const index = window.activeCharacters.findIndex(c => c.id === character.id);
+      if (index !== -1) {
+        window.activeCharacters[index].instance.destroy();
+        window.activeCharacters.splice(index, 1);
+      }
+    })
+
+    addedCharacters.forEach(character => {
+      const instance = new window.arkpets.Character(
+        `arkpets-character-${character.id}`,
+        window.arkpets.showContextMenu,
+        character.character,
+        RESOURCE_PATH
+      );
+      window.activeCharacters.push({
+        id: character.id,
+        name: character.character.name,
+        instance: instance
+      });
+    })
+
+    console.assert(window.activeCharacters.length === characters.length, "Active characters length mismatch");
+  }, [characters])
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -54,25 +135,29 @@ export default function SettingsPage() {
         <section id="characters">
           <h2 className="text-2xl font-semibold mb-4">Characters</h2>
           <div className="space-y-2">
-            {characters.map((character, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Select value={character} onValueChange={(value) => {
-                  const newCharacters = [...characters];
-                  newCharacters[index] = value;
-                  setCharacters(newCharacters);
-                }}>
+            {characters.map((item, _) => (
+              <div key={item.id} className="flex items-center space-x-2">
+                <Select 
+                  value={item.character.name} 
+                  onValueChange={(selectedName) => {
+                    const newCharacters = [...characters];
+                    const selectedItem = newCharacters.find(c => c.id === item.id)!
+                    selectedItem.character = availableCharacters.find(c => c.name === selectedName)!;
+                    setCharacters(newCharacters);
+                  }}
+                >
                   <SelectTrigger className="flex-grow">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {availableCharacters.map((char) => (
-                      <SelectItem key={char} value={char}>
-                        {char}
+                      <SelectItem key={char.name} value={char.name}>
+                        {char.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="icon" onClick={() => deleteCharacter(index)}>
+                <Button variant="outline" size="icon" onClick={() => deleteCharacter(item.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

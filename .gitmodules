@@ -1,0 +1,3 @@
+[submodule "ArkPets-Web"]
+	path = ArkPets-Web
+	url = https://github.com/fuyufjh/ArkPets-Web.git
