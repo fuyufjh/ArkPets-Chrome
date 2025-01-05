@@ -1,4 +1,8 @@
-import { CharacterResource } from "./common";
+import { CharacterModel } from "./common";
+
+export enum Source {
+    GitHub = "github",
+}
 
 // Data structure of https://github.com/isHarryh/Ark-Models/blob/main/models_data.json
 interface ModelsData {
@@ -11,12 +15,12 @@ interface ModelsData {
     gameDataVersionDescription: string;
     gameDataServerRegion: string;
     data: {
-        [key: string]: CharacterModel;
+        [key: string]: CharacterModelData;
     };
     arkPetsCompatibility: number[];
 }
 
-interface CharacterModel {
+interface CharacterModelData {
     assetId: string;
     type: string;
     style: string;
@@ -32,10 +36,6 @@ interface CharacterModel {
     };
 }
 
-export enum Source {
-    GitHub = "github",
-}
-
 function getModelsDataUrl(source: Source): string {
     switch (source) {
         case Source.GitHub:
@@ -43,7 +43,14 @@ function getModelsDataUrl(source: Source): string {
     }
 }
 
-export async function fetchModelsData(source: Source): Promise<CharacterResource[]> {
+function getModelBaseUrl(source: Source): string {
+    switch (source) {
+        case Source.GitHub:
+            return `https://raw.githubusercontent.com/isHarryh/Ark-Models/refs/heads/main/`;
+    }
+}
+
+export async function fetchModelsData(source: Source): Promise<CharacterModel[]> {
     const url = getModelsDataUrl(source);
     const response = await fetch(url);
     const models = await response.json() as ModelsData;
@@ -54,5 +61,20 @@ export async function fetchModelsData(source: Source): Promise<CharacterResource
         skeleton: `${operatorDirectory}/${key}/${model.assetList['.skel']}`,
         atlas: `${operatorDirectory}/${key}/${model.assetList['.atlas']}`,
         texture: `${operatorDirectory}/${key}/${model.assetList['.png']}`,
+        resourcePath: getModelBaseUrl(source),
     }));
+}
+
+export async function persistModelsData(models: CharacterModel[]) {
+    chrome.storage.local.set({ models, modelsLastUpdated: Date.now() });
+}
+
+export async function loadModelsData(): Promise<CharacterModel[]> {
+    const models = await chrome.storage.local.get<{models: CharacterModel[]}>();
+    return models.models ?? [];
+}
+
+export async function getModelsDataLastUpdated(): Promise<number> {
+    const models = await chrome.storage.local.get<{modelsLastUpdated: number}>();
+    return models.modelsLastUpdated ?? 0;
 }

@@ -1,4 +1,4 @@
-import { CharacterResource, CharacterItem, CHARACTER_RESOURCES, RESOURCE_PATH } from './lib/common'
+import { CharacterModel, CharacterItem, CHARACTER_MODELS, RESOURCE_PATH } from './lib/common'
 
 declare global {
   interface Window {
@@ -6,8 +6,7 @@ declare global {
       Character: new (
         elementId: string,
         contextMenuCallback: any,
-        characterResource: CharacterResource,
-        resourcePath: string
+        characterResource: CharacterModel,
       ) => any;
       showContextMenu: any;
       createContextMenu: any;
@@ -33,7 +32,7 @@ chrome.storage.local.get(null, (settings) => {
   if (settings.characters) {
     setCharacters(JSON.parse(settings.characters));
   } else {
-    chrome.storage.local.set({characters: JSON.stringify([{id: Date.now(), character: CHARACTER_RESOURCES[0]}])});
+    chrome.storage.local.set({characters: JSON.stringify([{id: Date.now(), character: CHARACTER_MODELS[0]}])});
   }
 });
 
@@ -72,7 +71,6 @@ function setCharacters(characters: CharacterItem[]) {
       `arkpets-character-${character.id}`,
       window.arkpets.showContextMenu,
       character.character,
-      RESOURCE_PATH
     );
     window.activeCharacters.push({
       id: character.id,
@@ -83,7 +81,7 @@ function setCharacters(characters: CharacterItem[]) {
   })
 }
 
-window.arkpets.createContextMenu(CHARACTER_RESOURCES, (canvasId: string, char: CharacterResource) => {
+window.arkpets.createContextMenu(CHARACTER_MODELS, (canvasId: string, char: CharacterModel) => {
   const id = parseInt(canvasId.replace('arkpets-character-', ''));
   chrome.storage.local.get('characters', (result) => {
     let characters = JSON.parse(result.characters);

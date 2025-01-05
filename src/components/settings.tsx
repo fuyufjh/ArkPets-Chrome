@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "./ui/select"
 import { Trash2, Plus } from 'lucide-react'
-import { CharacterResource, CharacterItem, CHARACTER_RESOURCES } from '../lib/common'
+import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '../lib/common'
 import {
   Command,
   CommandEmpty,
@@ -26,12 +26,11 @@ import {
 } from "./ui/popover"
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from "./ui/utils"
+import { fetchModelsData, loadModelsData, persistModelsData, Source } from '../lib/resource'
 
 export default function Settings() {
-  const getAvailableCharacters = (): CharacterResource[] => CHARACTER_RESOURCES;
-  
   const [characters, setCharacters] = useState<CharacterItem[]>()
-  const [availableCharacters] = useState<CharacterResource[]>(getAvailableCharacters())
+  const [availableCharacters, setAvailableCharacters] = useState<CharacterModel[]>(CHARACTER_MODELS);
   const [speed, setSpeed] = useState<number>(1)
   const [allowDragging, setAllowDragging] = useState<boolean>(true)
   const [animationSpeed, setAnimationSpeed] = useState<string>('medium')
@@ -52,10 +51,12 @@ export default function Settings() {
   }
 
   const resetAll = () => {
-    setCharacters([{id: 0, character: getAvailableCharacters()[0]}]);
-    setSpeed(1);
-    setAllowDragging(true);
-    setAnimationSpeed('medium');
+    chrome.storage.local.clear().then(() => {
+      setCharacters([{id: 0, character: CHARACTER_MODELS[0]}]);
+      setSpeed(1);
+      setAllowDragging(true);
+      setAnimationSpeed('medium');
+    });
   }
 
   useEffect(() => {
@@ -64,9 +65,24 @@ export default function Settings() {
       if (result.characters) {
         setCharacters(JSON.parse(result.characters));
       } else {
-        setCharacters([{id: Date.now(), character: getAvailableCharacters()[0]}]);
+        setCharacters([{id: Date.now(), character: CHARACTER_MODELS[0]}]);
       }
     });
+  }, [])
+
+  // Fetch available characters from remote or load from storage
+  useEffect(() => {
+    (async () => {
+      const models = await loadModelsData();
+      if (models.length === 0) {
+        const models = await fetchModelsData(Source.GitHub);
+        console.log(`${models.length} models downloaded`);
+        await persistModelsData(models);
+        setAvailableCharacters(CHARACTER_MODELS.concat(models));
+      } else {
+        setAvailableCharacters(CHARACTER_MODELS.concat(models));
+      }
+    })();
   }, [])
 
   useEffect(() => {
