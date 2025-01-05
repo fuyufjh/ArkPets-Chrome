@@ -1,4 +1,4 @@
-import { CharacterModel } from "./common";
+import { CharacterModel } from './common'
 
 export enum Source {
     GitHub = "github",

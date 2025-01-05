@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "webpack serve --mode development",
-    "dev:watch": "webpack --watch --mode development",
+    "watch": "webpack build --watch --mode development",
     "build": "webpack --mode production",
     "lint": "eslint src",
     "test": "vitest run"
@@ -23,7 +22,8 @@
     "react-dom": "^18",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "webextension-polyfill": "^0.12.0"
+    "webextension-polyfill": "^0.12.0",
+    "arkpets": "file:ArkPets-Web"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.289",

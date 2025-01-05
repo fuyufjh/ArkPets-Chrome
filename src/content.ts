@@ -1,23 +1,9 @@
-import { CharacterModel, CharacterItem, CHARACTER_MODELS, RESOURCE_PATH } from './lib/common'
+import { CharacterItem, CHARACTER_MODELS } from './lib/common'
+import { Character, CharacterModel, showContextMenu } from 'arkpets'
 
-declare global {
-  interface Window {
-    arkpets: {
-      Character: new (
-        elementId: string,
-        contextMenuCallback: any,
-        characterResource: CharacterModel,
-      ) => any;
-      showContextMenu: any;
-      createContextMenu: any;
-    };
-    activeCharacters: {
-      id: number;
-      name: string;
-      instance: any;
-    }[];
-  }
-}
+let activeCharacters: (CharacterItem & {
+  instance: Character;
+})[];
 
 export {};
 
@@ -38,63 +24,69 @@ chrome.storage.local.get(null, (settings) => {
 
 function setCharacters(characters: CharacterItem[]) {
   // Keep the active characters in another JS variables to avoid re-creating all characters
-  if (!window.activeCharacters) {
-    window.activeCharacters = [];
+  if (!activeCharacters) {
+    activeCharacters = [];
   }
-  let addedCharacters = characters.filter(character => !window.activeCharacters.some(c => c.id === character.id));
-  let removedCharacters = window.activeCharacters.filter(character => !characters.some(c => c.id === character.id));
-  let updatedCharacters = characters.filter(character => window.activeCharacters.some(c => c.id === character.id && c.name !== character.model.name));
+  let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
+  let removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
+  let updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.model.id !== character.model.id));
 
   removedCharacters.forEach(character => {
-    const index = window.activeCharacters.findIndex(c => c.id === character.id);
+    const index = activeCharacters.findIndex(c => c.id === character.id);
     if (index !== -1) {
-      let instance = window.activeCharacters[index].instance
+      let instance = activeCharacters[index].instance
       instance.fadeOut().then(() => {
         instance.destroy();
       });
-      window.activeCharacters.splice(index, 1);
+      activeCharacters.splice(index, 1);
       console.log(`Character ${character.id} deleted`);
     }
   })
 
   updatedCharacters.forEach(character => {
-    const index = window.activeCharacters.findIndex(c => c.id === character.id);
+    const index = activeCharacters.findIndex(c => c.id === character.id);
     if (index !== -1) {
-      window.activeCharacters[index].name = character.model.name;
-      window.activeCharacters[index].instance.loadCharacterAssets(character.model);
+      activeCharacters[index].instance.loadCharacterModel(character.model);
       console.log(`Character ${character.id} updated`);
     }
   })
 
   addedCharacters.forEach(character => {
-    const instance = new window.arkpets.Character(
+    const instance = new Character(
       `arkpets-character-${character.id}`,
-      window.arkpets.showContextMenu,
+      (e: MouseEvent | TouchEvent) => {
+        showContextMenu(e, instance, {
+          onSelectCharacter: onSelectCharacter,
+          onHideCharacter: (c: Character) => onDeleteCharacter(c),
+        });
+      },
       character.model,
     );
-    window.activeCharacters.push({
+    activeCharacters.push({
       id: character.id,
-      name: character.model.name,
+      model: character.model,
       instance: instance
     });
     console.log(`Character ${character.id} added`);
   })
 }
 
-window.arkpets.createContextMenu(CHARACTER_MODELS, (canvasId: string, char: CharacterModel) => {
-  const id = parseInt(canvasId.replace('arkpets-character-', ''));
-  chrome.storage.local.get('characters', (result) => {
-    let characters = JSON.parse(result.characters);
-    characters = characters.map((c: CharacterItem) => c.id === id ? {id, character: char} : c);
-    chrome.storage.local.set({characters: JSON.stringify(characters)});
-  });
-}, (canvasId: string) => {
-  const id = parseInt(canvasId.replace('arkpets-character-', ''));
-  chrome.storage.local.get('characters', (result) => {
-    let characters = JSON.parse(result.characters);
+function onSelectCharacter(c: Character, model: CharacterModel) {
+    const id = parseInt(c.getCanvasId().replace('arkpets-character-', ''));
+    chrome.storage.local.get<{characters: CharacterItem[]}>('characters', (result) => {
+      let characters = result.characters;
+      characters = characters.map((c: CharacterItem) => c.id === id ? {id, model} : c);
+      chrome.storage.local.set({characters});
+    });
+}
+
+function onDeleteCharacter(c: Character) {
+  const id = parseInt(c.getCanvasId().replace('arkpets-character-', ''));
+  chrome.storage.local.get<{characters: CharacterItem[]}>('characters', (result) => {
+    let characters = result.characters;
     characters = characters.filter((c: CharacterItem) => c.id !== id);
-    chrome.storage.local.set({characters: JSON.stringify(characters)});
+    chrome.storage.local.set({characters});
   });
-});
+}
 
 console.debug("ArkPets Chrome Content Script Loaded");

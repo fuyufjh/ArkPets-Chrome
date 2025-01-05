@@ -66,10 +66,9 @@ const config: Configuration = {
     new CopyPlugin({
       patterns: [
         { from: "src/manifest.json", to: "manifest.json" },
-        { from: "ArkPets-Web/dist/bundle.js", to: "arkpets.js" },
       ],
     }),
   ],
 };
 
-export default config; 
+export default config;

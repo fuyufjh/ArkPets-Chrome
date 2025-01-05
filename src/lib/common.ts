@@ -1,11 +1,5 @@
-export interface CharacterModel {
-  id: string;
-  name: string;
-  skeleton: string;
-  atlas: string;
-  texture: string;
-  resourcePath: string;
-}
+import type { CharacterModel } from 'arkpets'
+export type { CharacterModel }
 
 export interface CharacterItem {
   id: number;
