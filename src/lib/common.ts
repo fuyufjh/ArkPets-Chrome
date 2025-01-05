@@ -13,7 +13,7 @@ export interface CharacterItem {
 }
 
 
-export const RESOURCE_PATH = "http://localhost:8000/assets/models";
+export const RESOURCE_PATH = "http://localhost:8000/assets/models/";
 
 export const CHARACTER_MODELS: CharacterModel[] = [
   {
