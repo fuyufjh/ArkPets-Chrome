@@ -1,4 +1,5 @@
 export interface CharacterResource {
+  id: string;
   name: string;
   skeleton: string;
   atlas: string;

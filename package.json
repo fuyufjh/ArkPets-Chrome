@@ -6,7 +6,8 @@
     "dev": "webpack serve --mode development",
     "dev:watch": "webpack --watch --mode development",
     "build": "webpack --mode production",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",
@@ -47,6 +48,7 @@
     "typescript-eslint": "^8.19.0",
     "webpack": "^5.88.2",
     "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.0"
+    "webpack-dev-server": "^5.2.0",
+    "vitest": "^2.1.8"
   }
 }

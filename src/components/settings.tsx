@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "./ui/select"
 import { Trash2, Plus } from 'lucide-react'
-import { CharacterResource, CharacterItem, CHARACTER_RESOURCES } from '../common'
+import { CharacterResource, CharacterItem, CHARACTER_RESOURCES } from '../lib/common'
 import {
   Command,
   CommandEmpty,

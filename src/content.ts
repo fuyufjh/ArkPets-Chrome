@@ -1,4 +1,4 @@
-import { CharacterResource, CharacterItem, CHARACTER_RESOURCES, RESOURCE_PATH } from './common'
+import { CharacterResource, CharacterItem, CHARACTER_RESOURCES, RESOURCE_PATH } from './lib/common'
 
 declare global {
   interface Window {
