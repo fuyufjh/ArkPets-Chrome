@@ -9,7 +9,7 @@ export interface CharacterModel {
 
 export interface CharacterItem {
   id: number;
-  character: CharacterModel;
+  model: CharacterModel;
 }
 
 

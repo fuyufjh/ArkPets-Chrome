@@ -23,16 +23,16 @@ export {};
 
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.characters) {
-    setCharacters(JSON.parse(changes.characters.newValue));
+    setCharacters(changes.characters.newValue as CharacterItem[]);
   }
 });
 
 // Initial setup when content script loads
 chrome.storage.local.get(null, (settings) => {
   if (settings.characters) {
-    setCharacters(JSON.parse(settings.characters));
+    setCharacters(settings.characters as CharacterItem[]);
   } else {
-    chrome.storage.local.set({characters: JSON.stringify([{id: Date.now(), character: CHARACTER_MODELS[0]}])});
+    chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
   }
 });
 
@@ -43,7 +43,7 @@ function setCharacters(characters: CharacterItem[]) {
   }
   let addedCharacters = characters.filter(character => !window.activeCharacters.some(c => c.id === character.id));
   let removedCharacters = window.activeCharacters.filter(character => !characters.some(c => c.id === character.id));
-  let updatedCharacters = characters.filter(character => window.activeCharacters.some(c => c.id === character.id && c.name !== character.character.name));
+  let updatedCharacters = characters.filter(character => window.activeCharacters.some(c => c.id === character.id && c.name !== character.model.name));
 
   removedCharacters.forEach(character => {
     const index = window.activeCharacters.findIndex(c => c.id === character.id);
@@ -60,8 +60,8 @@ function setCharacters(characters: CharacterItem[]) {
   updatedCharacters.forEach(character => {
     const index = window.activeCharacters.findIndex(c => c.id === character.id);
     if (index !== -1) {
-      window.activeCharacters[index].name = character.character.name;
-      window.activeCharacters[index].instance.loadCharacterAssets(character.character);
+      window.activeCharacters[index].name = character.model.name;
+      window.activeCharacters[index].instance.loadCharacterAssets(character.model);
       console.log(`Character ${character.id} updated`);
     }
   })
@@ -70,11 +70,11 @@ function setCharacters(characters: CharacterItem[]) {
     const instance = new window.arkpets.Character(
       `arkpets-character-${character.id}`,
       window.arkpets.showContextMenu,
-      character.character,
+      character.model,
     );
     window.activeCharacters.push({
       id: character.id,
-      name: character.character.name,
+      name: character.model.name,
       instance: instance
     });
     console.log(`Character ${character.id} added`);
@@ -97,4 +97,4 @@ window.arkpets.createContextMenu(CHARACTER_MODELS, (canvasId: string, char: Char
   });
 });
 
-console.log("ArkPets Chrome Content Script Loaded");
+console.debug("ArkPets Chrome Content Script Loaded");

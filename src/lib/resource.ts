@@ -62,7 +62,7 @@ export async function fetchModelsData(source: Source): Promise<CharacterModel[]>
         atlas: `${operatorDirectory}/${key}/${model.assetList['.atlas']}`,
         texture: `${operatorDirectory}/${key}/${model.assetList['.png']}`,
         resourcePath: getModelBaseUrl(source),
-    }));
+    } as CharacterModel));
 }
 
 export async function persistModelsData(models: CharacterModel[]) {

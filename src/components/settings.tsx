@@ -40,7 +40,7 @@ export default function Settings() {
       return; // Initializing
     }
     let id = Date.now(); // Use timestamp (ms) as identifier
-    setCharacters([...characters, {id, character: availableCharacters[0]}])
+    setCharacters([...characters, {id, model: availableCharacters[0]}])
   }
 
   const deleteCharacter = (id: number) => {
@@ -52,7 +52,7 @@ export default function Settings() {
 
   const resetAll = () => {
     chrome.storage.local.clear().then(() => {
-      setCharacters([{id: 0, character: CHARACTER_MODELS[0]}]);
+      setCharacters([{id: Date.now(), model: CHARACTER_MODELS[0]}]);
       setSpeed(1);
       setAllowDragging(true);
       setAnimationSpeed('medium');
@@ -63,9 +63,9 @@ export default function Settings() {
     // Load characters from storage
     chrome.storage.local.get(null, (result) => {
       if (result.characters) {
-        setCharacters(JSON.parse(result.characters));
+        setCharacters(result.characters as CharacterItem[]);
       } else {
-        setCharacters([{id: Date.now(), character: CHARACTER_MODELS[0]}]);
+        chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
       }
     });
   }, [])
@@ -86,7 +86,7 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    chrome.storage.local.set({characters: JSON.stringify(characters)});
+    chrome.storage.local.set<{characters: CharacterItem[]}>({characters: characters});
   }, [characters])
 
   return (
@@ -106,7 +106,7 @@ export default function Settings() {
                       role="combobox"
                       className="flex-grow justify-between"
                     >
-                      {item.character.name}
+                      {item.model.name}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -116,24 +116,24 @@ export default function Settings() {
                       <CommandList>
                         <CommandEmpty>No character found.</CommandEmpty>
                         <CommandGroup>
-                          {availableCharacters.map((char) => (
+                          {availableCharacters.map((model) => (
                             <CommandItem
-                              key={char.name}
-                              value={char.name}
-                              onSelect={(selectedName) => {
+                              key={model.id}
+                              value={model.id + " " + model.name}
+                              onSelect={() => {
                                 const newCharacters = [...characters!];
                                 const selectedItem = newCharacters.find(c => c.id === item.id)!
-                                selectedItem.character = availableCharacters.find(c => c.name === selectedName)!;
+                                selectedItem.model = model;
                                 setCharacters(newCharacters);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  item.character.name === char.name ? "opacity-100" : "opacity-0"
+                                  item.model.id === model.id ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {char.name}
+                              {model.name}
                             </CommandItem>
                           ))}
                         </CommandGroup>
