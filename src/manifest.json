@@ -21,7 +21,8 @@
   ],
   "web_accessible_resources": [{
     "resources": [
-      "models/*"
+      "models/*",
+      "*.js.map"
     ],
     "matches": ["<all_urls>"]
   }]

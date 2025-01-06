@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "./ui/select"
 import { Trash2, Plus } from 'lucide-react'
-import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '../lib/common'
+import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '@/lib/common'
 import {
   Command,
   CommandEmpty,
@@ -25,7 +25,7 @@ import {
   PopoverTrigger,
 } from "./ui/popover"
 import { Check, ChevronsUpDown } from 'lucide-react'
-import { cn } from "./ui/utils"
+import { cn } from "../lib/utils"
 import { fetchModelsData, loadModelsData, persistModelsData, Source } from '../lib/resource'
 
 export default function Settings() {
