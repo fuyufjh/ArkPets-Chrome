@@ -26,73 +26,75 @@ import {
 } from "./ui/popover"
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from "../lib/utils"
-import { fetchModelsData, getModelsDataLastUpdated, loadModelsData, persistModelsData, Source } from '../lib/resource'
+import { fetchModelsData, Source } from '../lib/resource'
 
 export default function Settings() {
-  const [characters, setCharacters] = useState<CharacterItem[]>()
-  const [availableCharacters, setAvailableCharacters] = useState<CharacterModel[]>(CHARACTER_MODELS);
+  const [characters, setCharacters] = useState<CharacterItem[]>([])
+  const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
   const [lastUpdated, setLastUpdated] = useState<number>(0)
 
-  const addCharacter = () => {
-    if (!characters) {
-      return; // Initializing
-    }
+  async function setCharactersAndPersist(characters: CharacterItem[]) {
+    setCharacters(characters);
+    await chrome.storage.local.set<{characters: CharacterItem[]}>({ characters });
+  }
+
+  const onAddCharacter = async () => {
     let id = Date.now(); // Use timestamp (ms) as identifier
-    setCharacters([...characters, {id, model: availableCharacters[0]}])
+    await setCharactersAndPersist([...characters, {id, model: CHARACTER_MODELS[0]}]);
   }
 
-  const deleteCharacter = (id: number) => {
+  const onUpdateCharacter = async (id: number, model: CharacterModel) => {
+    await setCharactersAndPersist(characters.map((item) => item.id === id ? {id, model} : item));
+  }
+  
+  const onDeleteCharacter = async (id: number) => {
+    await setCharactersAndPersist(characters.filter((item) => item.id !== id));
+  }
+
+  const onResetAll = async () => {
+    await chrome.storage.local.clear();
+    await loadFromStorage();
+  }
+
+  // Load characters from storage when opening
+  // It will also initialize the storage if it's empty
+  async function loadFromStorage() {
+    const stored = await chrome.storage.local.get<{
+      characters: CharacterItem[],
+      models: CharacterModel[],
+      modelsLastUpdated: number,
+    }>();
+    let characters = stored.characters;
     if (!characters) {
-      return; // Initializing
+      characters = [{id: Date.now(), model: CHARACTER_MODELS[0]}];
+      await chrome.storage.local.set<{characters: CharacterItem[]}>({ characters });
     }
-    setCharacters(characters.filter((item) => item.id !== id))
+    setCharacters(characters);
+
+    let models = stored.models;
+    let modelsLastUpdated = stored.modelsLastUpdated;
+    if (!models) {
+      models = await fetchModelsData(Source.GitHub);
+      modelsLastUpdated = Date.now();
+      console.log(`${models.length} models downloaded`);
+      await chrome.storage.local.set({ models, modelsLastUpdated });
+    }
+    setAvailableModels(CHARACTER_MODELS.concat(models));
+    setLastUpdated(modelsLastUpdated);
   }
 
-  const resetAll = () => {
-    chrome.storage.local.clear().then(() => {
-      setCharacters([{id: Date.now(), model: CHARACTER_MODELS[0]}]);
-    });
-  }
-
   useEffect(() => {
-    // Load characters from storage
-    chrome.storage.local.get(null, (result) => {
-      if (result.characters) {
-        setCharacters(result.characters as CharacterItem[]);
-      } else {
-        chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
-      }
-    });
+     loadFromStorage();
   }, [])
 
-  // Fetch available characters from remote or load from storage
-  useEffect(() => {
-    (async () => {
-      let models = await loadModelsData();
-      if (models.length === 0) {
-        models = await fetchModelsData(Source.GitHub);
-        console.log(`${models.length} models downloaded`);
-        await persistModelsData(models);
-      }
-      setAvailableCharacters(CHARACTER_MODELS.concat(models));
-    })();
-  }, [])
-
-  useEffect(() => {
-    chrome.storage.local.set<{characters: CharacterItem[]}>({characters: characters});
-  }, [characters])
-
-  const updateResources = async () => {
+  const onUpdateResources = async () => {
     const models = await fetchModelsData(Source.GitHub);
+    const modelsLastUpdated = Date.now();
     console.log(`${models.length} models downloaded`);
-    await persistModelsData(models);
-    setAvailableCharacters(CHARACTER_MODELS.concat(models));
-    setLastUpdated(await getModelsDataLastUpdated());
+    await chrome.storage.local.set({ models, modelsLastUpdated });
+    setAvailableModels(CHARACTER_MODELS.concat(models));
+    setLastUpdated(modelsLastUpdated);
   }
-
-  useEffect(() => {
-    getModelsDataLastUpdated().then(setLastUpdated);
-  }, []);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -121,16 +123,11 @@ export default function Settings() {
                       <CommandList>
                         <CommandEmpty>No character found.</CommandEmpty>
                         <CommandGroup>
-                          {availableCharacters.map((model) => (
+                          {availableModels.map((model) => (
                             <CommandItem
                               key={model.id}
                               value={model.id + " " + model.name}
-                              onSelect={() => {
-                                const newCharacters = [...characters!];
-                                const selectedItem = newCharacters.find(c => c.id === item.id)!
-                                selectedItem.model = model;
-                                setCharacters(newCharacters);
-                              }}
+                              onSelect={() => onUpdateCharacter(item.id, model)}
                             >
                               <Check
                                 className={cn(
@@ -146,12 +143,12 @@ export default function Settings() {
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <Button variant="outline" size="icon" onClick={() => deleteCharacter(item.id)}>
+                <Button variant="outline" size="icon" onClick={() => onDeleteCharacter(item.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}
-            <Button onClick={addCharacter} className="mt-2">
+            <Button onClick={onAddCharacter} className="mt-2">
               <Plus className="h-4 w-4 mr-2" /> Add Character
             </Button>
           </div>
@@ -163,11 +160,11 @@ export default function Settings() {
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <span>Resource updated at: {new Date(lastUpdated).toLocaleString()}</span>
-              <Button variant="outline" onClick={updateResources}>
+              <Button variant="outline" onClick={onUpdateResources}>
                 Update
               </Button>
             </div>
-            <Button variant="destructive" onClick={resetAll}>
+            <Button variant="destructive" onClick={onResetAll}>
               Reset All
             </Button>
           </div>

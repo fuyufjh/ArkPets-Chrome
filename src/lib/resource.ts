@@ -64,17 +64,3 @@ export async function fetchModelsData(source: Source): Promise<CharacterModel[]>
         resourcePath: getModelBaseUrl(source),
     } as CharacterModel));
 }
-
-export async function persistModelsData(models: CharacterModel[]) {
-    chrome.storage.local.set({ models, modelsLastUpdated: Date.now() });
-}
-
-export async function loadModelsData(): Promise<CharacterModel[]> {
-    const models = await chrome.storage.local.get<{models: CharacterModel[]}>();
-    return models.models ?? [];
-}
-
-export async function getModelsDataLastUpdated(): Promise<number> {
-    const models = await chrome.storage.local.get<{modelsLastUpdated: number}>();
-    return models.modelsLastUpdated ?? 0;
-}

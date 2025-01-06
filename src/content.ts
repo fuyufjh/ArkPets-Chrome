@@ -1,9 +1,10 @@
 import { CharacterItem, CHARACTER_MODELS } from './lib/common'
 import { Character, CharacterModel, showContextMenu } from 'arkpets'
 
-let activeCharacters: (CharacterItem & {
+let activeCharacters: {
+  id: number;
   instance: Character;
-})[];
+}[];
 
 export {};
 
@@ -32,7 +33,7 @@ function setCharacters(characters?: CharacterItem[]) {
   }
   let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
   let removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
-  let updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.model.id !== character.model.id));
+  let updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.instance.getModel().id !== character.model.id));
 
   removedCharacters.forEach(character => {
     const index = activeCharacters.findIndex(c => c.id === character.id);
@@ -67,7 +68,6 @@ function setCharacters(characters?: CharacterItem[]) {
     );
     activeCharacters.push({
       id: character.id,
-      model: character.model,
       instance: instance
     });
     console.log(`Character ${character.id} added`);
