@@ -26,14 +26,12 @@ import {
 } from "./ui/popover"
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from "../lib/utils"
-import { fetchModelsData, loadModelsData, persistModelsData, Source } from '../lib/resource'
+import { fetchModelsData, getModelsDataLastUpdated, loadModelsData, persistModelsData, Source } from '../lib/resource'
 
 export default function Settings() {
   const [characters, setCharacters] = useState<CharacterItem[]>()
   const [availableCharacters, setAvailableCharacters] = useState<CharacterModel[]>(CHARACTER_MODELS);
-  const [speed, setSpeed] = useState<number>(1)
-  const [allowDragging, setAllowDragging] = useState<boolean>(true)
-  const [animationSpeed, setAnimationSpeed] = useState<string>('medium')
+  const [lastUpdated, setLastUpdated] = useState<number>(0)
 
   const addCharacter = () => {
     if (!characters) {
@@ -53,9 +51,6 @@ export default function Settings() {
   const resetAll = () => {
     chrome.storage.local.clear().then(() => {
       setCharacters([{id: Date.now(), model: CHARACTER_MODELS[0]}]);
-      setSpeed(1);
-      setAllowDragging(true);
-      setAnimationSpeed('medium');
     });
   }
 
@@ -73,21 +68,31 @@ export default function Settings() {
   // Fetch available characters from remote or load from storage
   useEffect(() => {
     (async () => {
-      const models = await loadModelsData();
+      let models = await loadModelsData();
       if (models.length === 0) {
-        const models = await fetchModelsData(Source.GitHub);
+        models = await fetchModelsData(Source.GitHub);
         console.log(`${models.length} models downloaded`);
         await persistModelsData(models);
-        setAvailableCharacters(CHARACTER_MODELS.concat(models));
-      } else {
-        setAvailableCharacters(CHARACTER_MODELS.concat(models));
       }
+      setAvailableCharacters(CHARACTER_MODELS.concat(models));
     })();
   }, [])
 
   useEffect(() => {
     chrome.storage.local.set<{characters: CharacterItem[]}>({characters: characters});
   }, [characters])
+
+  const updateResources = async () => {
+    const models = await fetchModelsData(Source.GitHub);
+    console.log(`${models.length} models downloaded`);
+    await persistModelsData(models);
+    setAvailableCharacters(CHARACTER_MODELS.concat(models));
+    setLastUpdated(await getModelsDataLastUpdated());
+  }
+
+  useEffect(() => {
+    getModelsDataLastUpdated().then(setLastUpdated);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -152,50 +157,20 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Motion Section */}
-        <section id="motion">
-          <h2 className="text-2xl font-semibold mb-4">Motion</h2>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <label htmlFor="speed" className="w-32">Speed:</label>
-              <Input
-                id="speed"
-                type="number"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="w-24"
-              />
-            </div>
-            <div className="flex items-center space-x-4">
-              <label htmlFor="allowDragging" className="w-32">Allow dragging:</label>
-              <Switch
-                id="allowDragging"
-                checked={allowDragging}
-                onCheckedChange={setAllowDragging}
-              />
-            </div>
-            <div className="flex items-center space-x-4">
-              <label htmlFor="animationSpeed" className="w-32">Animation speed:</label>
-              <Select value={animationSpeed} onValueChange={setAnimationSpeed}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="slow">Slow</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="fast">Fast</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </section>
-
         {/* System Section */}
         <section id="system">
           <h2 className="text-2xl font-semibold mb-4">System</h2>
-          <Button variant="destructive" onClick={resetAll}>
-            Reset All
-          </Button>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span>Resource updated at: {new Date(lastUpdated).toLocaleString()}</span>
+              <Button variant="outline" onClick={updateResources}>
+                Update
+              </Button>
+            </div>
+            <Button variant="destructive" onClick={resetAll}>
+              Reset All
+            </Button>
+          </div>
         </section>
       </main>
     </div>
