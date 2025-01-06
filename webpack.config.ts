@@ -72,6 +72,10 @@ const config: Configuration = {
         { 
           from: '../ArkPets-Web/assets/models',
           to: 'models'
+        },
+        {
+          from: 'assets',
+          to: 'assets'
         }
       ],
     }),

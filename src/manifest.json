@@ -4,9 +4,14 @@
   "description": "Shows Arknights characters on web pages",
   "version": "1.0",
   "permissions": [
-    "storage",
-    "activeTab"
+    "storage"
   ],
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
   "host_permissions": [
     "https://raw.githubusercontent.com/*"
   ],
