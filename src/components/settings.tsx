@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select"
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, SquareArrowUpRightIcon } from 'lucide-react'
 import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '@/lib/common'
 import {
   Command,
@@ -167,6 +167,15 @@ export default function Settings() {
             <Button variant="destructive" onClick={onResetAll}>
               初始化设置
             </Button>
+            <a
+              href="https://github.com/fuyufjh/ArkPets-Chrome"
+              target="_blank"
+              rel="noopener noreferrer" 
+              className="flex mt-4 text-blue-500 hover:underline items-center gap-2"
+            >
+              项目主页
+              <SquareArrowUpRightIcon className="h-4 w-4" />
+            </a>
           </div>
         </section>
       </main>
