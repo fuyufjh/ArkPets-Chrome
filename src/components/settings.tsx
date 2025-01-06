@@ -102,7 +102,7 @@ export default function Settings() {
       <main className="flex-1 p-6 space-y-8">
         {/* Characters Section */}
         <section id="characters">
-          <h2 className="text-2xl font-semibold mb-4">Characters</h2>
+          <h2 className="text-2xl font-semibold mb-4">角色模型</h2>
           <div className="space-y-2">
             {(characters || []).map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
@@ -119,9 +119,9 @@ export default function Settings() {
                   </PopoverTrigger>
                   <PopoverContent className="w-[200px] p-0">
                     <Command>
-                      <CommandInput placeholder="Search character..." />
+                      <CommandInput placeholder="查找模型..." />
                       <CommandList>
-                        <CommandEmpty>No character found.</CommandEmpty>
+                        <CommandEmpty>未找到角色模型</CommandEmpty>
                         <CommandGroup>
                           {availableModels.map((model) => (
                             <CommandItem
@@ -156,16 +156,16 @@ export default function Settings() {
 
         {/* System Section */}
         <section id="system">
-          <h2 className="text-2xl font-semibold mb-4">System</h2>
+          <h2 className="text-2xl font-semibold mb-4">系统</h2>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <span>Resource updated at: {new Date(lastUpdated).toLocaleString()}</span>
+              <span>资源更新于:<br/> {new Date(lastUpdated).toLocaleString()}</span>
               <Button variant="outline" onClick={onUpdateResources}>
-                Update
+                更新
               </Button>
             </div>
             <Button variant="destructive" onClick={onResetAll}>
-              Reset All
+              初始化设置
             </Button>
           </div>
         </section>
