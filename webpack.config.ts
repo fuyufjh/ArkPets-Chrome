@@ -66,6 +66,10 @@ const config: Configuration = {
     new CopyPlugin({
       patterns: [
         { from: "src/manifest.json", to: "manifest.json" },
+        { 
+          from: '../ArkPets-Web/assets/models',
+          to: 'models'
+        }
       ],
     }),
   ],

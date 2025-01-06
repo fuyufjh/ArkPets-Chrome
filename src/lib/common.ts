@@ -6,8 +6,9 @@ export interface CharacterItem {
   model: CharacterModel;
 }
 
-
-export const RESOURCE_PATH = "http://localhost:8000/assets/models/";
+function getResourcePath() {
+  return chrome.runtime.getURL('models/');
+}
 
 export const CHARACTER_MODELS: CharacterModel[] = [
   {
@@ -16,7 +17,9 @@ export const CHARACTER_MODELS: CharacterModel[] = [
     skeleton: "4058_pepe/build_char_4058_pepe.skel",
     atlas: "4058_pepe/build_char_4058_pepe.atlas",
     texture: "4058_pepe/build_char_4058_pepe.png",
-    resourcePath: RESOURCE_PATH,
+    get resourcePath() {
+      return getResourcePath();
+    }
   },
   {
     id: "lappland_the_decadenza",
@@ -24,6 +27,8 @@ export const CHARACTER_MODELS: CharacterModel[] = [
     skeleton: "1038_whitw2/build_char_1038_whitw2.skel",
     atlas: "1038_whitw2/build_char_1038_whitw2.atlas",
     texture: "1038_whitw2/build_char_1038_whitw2.png",
-    resourcePath: RESOURCE_PATH,
+    get resourcePath() {
+      return getResourcePath();
+    }
   }
 ];
