@@ -9,7 +9,7 @@ export {};
 
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.characters) {
-    setCharacters(changes.characters.newValue as CharacterItem[]);
+    setCharacters(changes.characters.newValue as CharacterItem[] | undefined);
   }
 });
 
@@ -22,10 +22,13 @@ chrome.storage.local.get(null, (settings) => {
   }
 });
 
-function setCharacters(characters: CharacterItem[]) {
+function setCharacters(characters?: CharacterItem[]) {
   // Keep the active characters in another JS variables to avoid re-creating all characters
   if (!activeCharacters) {
     activeCharacters = [];
+  }
+  if (!characters) {
+    characters = [];
   }
   let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
   let removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
