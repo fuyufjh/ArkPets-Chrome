@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select"
-import { Trash2, Plus, SquareArrowUpRightIcon } from 'lucide-react'
+import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw } from 'lucide-react'
 import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '@/lib/common'
 import {
   Command,
@@ -97,12 +97,11 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Main content */}
-      <main className="flex-1 p-6 space-y-8">
+    <div className="w-[300px] h-[500px] p-4 flex flex-col">
+      <div className="space-y-6">
         {/* Characters Section */}
-        <section id="characters">
-          <h2 className="text-2xl font-semibold mb-4">角色模型</h2>
+        <section>
+          <h2 className="text-lg font-semibold mb-3">角色模型</h2>
           <div className="space-y-2">
             {(characters || []).map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
@@ -148,37 +147,57 @@ export default function Settings() {
                 </Button>
               </div>
             ))}
-            <Button onClick={onAddCharacter} className="mt-2">
+            <Button onClick={onAddCharacter} className="w-full mt-2">
               <Plus className="h-4 w-4 mr-2" /> Add Character
             </Button>
           </div>
         </section>
 
+        {/* <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Behavior</h2>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="allow-interaction"
+              checked={allowInteraction}
+              onCheckedChange={setAllowInteraction}
+            />
+            <Label htmlFor="allow-interaction">Allow interaction</Label>
+          </div>
+        </div> */}
+
         {/* System Section */}
-        <section id="system">
-          <h2 className="text-2xl font-semibold mb-4">系统</h2>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <span>资源更新于:<br/> {new Date(lastUpdated).toLocaleString()}</span>
-              <Button variant="outline" onClick={onUpdateResources}>
-                更新
+        <section>
+          <h2 className="text-lg font-semibold mb-3">系统</h2>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                资源更新于:<br/> {new Date(lastUpdated).toLocaleString()}
+              </p>
+              <Button variant="outline" size="sm" onClick={onUpdateResources} aria-label="更新">
+                <RefreshCcw className="w-4 h-4" />
               </Button>
             </div>
-            <Button variant="destructive" onClick={onResetAll}>
-              初始化设置
-            </Button>
-            <a
-              href="https://github.com/fuyufjh/ArkPets-Chrome"
-              target="_blank"
-              rel="noopener noreferrer" 
-              className="flex mt-4 text-blue-500 hover:underline items-center gap-2"
-            >
-              项目主页
-              <SquareArrowUpRightIcon className="h-4 w-4" />
-            </a>
           </div>
         </section>
-      </main>
+      </div>
+
+      <Button 
+        variant="destructive" 
+        className="mt-4 w-full" 
+        onClick={onResetAll}
+      >
+        初始化设置
+      </Button>
+      
+      <a 
+        href="https://github.com/fuyufjh/ArkPets-Chrome" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="flex items-center justify-center mt-4 text-sm text-gray-600 hover:text-gray-800"
+      >
+        项目主页
+        <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
+      </a>
     </div>
   )
 }
