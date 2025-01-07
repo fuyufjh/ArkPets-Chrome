@@ -1,16 +1,20 @@
 import { CharacterItem, CHARACTER_MODELS } from './lib/common'
 import { Character, CharacterModel, showContextMenu } from 'arkpets'
 
+// Keep the active characters in JS variables to avoid re-creating all characters
 let activeCharacters: {
   id: number;
   instance: Character;
-}[];
+}[] = [];
 
 export {};
 
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.characters) {
     setCharacters(changes.characters.newValue as CharacterItem[] | undefined);
+  }
+  if (changes.allowInteraction) {
+    setAllowInteraction(changes.allowInteraction.newValue as boolean | undefined);
   }
 });
 
@@ -21,16 +25,12 @@ chrome.storage.local.get(null, (settings) => {
   } else {
     chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
   }
+  if (settings.allowInteraction) {
+    setAllowInteraction(settings.allowInteraction as boolean);
+  }
 });
 
-function setCharacters(characters?: CharacterItem[]) {
-  // Keep the active characters in another JS variables to avoid re-creating all characters
-  if (!activeCharacters) {
-    activeCharacters = [];
-  }
-  if (!characters) {
-    characters = [];
-  }
+function setCharacters(characters: CharacterItem[] = []) {
   let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
   let removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
   let updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.instance.getModel().id !== character.model.id));
@@ -74,21 +74,27 @@ function setCharacters(characters?: CharacterItem[]) {
   })
 }
 
-function onSelectCharacter(c: Character, model: CharacterModel) {
+// callback for menu: select character
+async function onSelectCharacter(c: Character, model: CharacterModel) {
     const id = parseInt(c.getCanvasId().replace('arkpets-character-', ''));
-    chrome.storage.local.get<{characters: CharacterItem[]}>('characters', (result) => {
-      let characters = result.characters;
-      characters = characters.map((c: CharacterItem) => c.id === id ? {id, model} : c);
-      chrome.storage.local.set({characters});
-    });
+    const result = await chrome.storage.local.get<{characters: CharacterItem[]}>('characters');
+    let characters = result.characters;
+    characters = characters.map((c: CharacterItem) => c.id === id ? {id, model} : c);
+    await chrome.storage.local.set({characters});
 }
 
-function onDeleteCharacter(c: Character) {
+// callback for menu: delete character
+async function onDeleteCharacter(c: Character) {
   const id = parseInt(c.getCanvasId().replace('arkpets-character-', ''));
-  chrome.storage.local.get<{characters: CharacterItem[]}>('characters', (result) => {
-    let characters = result.characters;
-    characters = characters.filter((c: CharacterItem) => c.id !== id);
-    chrome.storage.local.set({characters});
+  const result = await chrome.storage.local.get<{characters: CharacterItem[]}>('characters');
+  let characters = result.characters;
+  characters = characters.filter((c: CharacterItem) => c.id !== id);
+  await chrome.storage.local.set({characters});
+}
+
+function setAllowInteraction(allowInteraction: boolean = true) {
+  activeCharacters.forEach(character => {
+    character.instance.setAllowInteract(allowInteraction);
   });
 }
 

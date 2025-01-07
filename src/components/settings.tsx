@@ -27,15 +27,22 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from "../lib/utils"
 import { fetchModelsData, Source } from '../lib/resource'
+import { Label } from './ui/label'
 
 export default function Settings() {
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
   const [lastUpdated, setLastUpdated] = useState<number>(0)
+  const [allowInteraction, setAllowInteraction] = useState<boolean>(true)
 
   async function setCharactersAndPersist(characters: CharacterItem[]) {
     setCharacters(characters);
     await chrome.storage.local.set<{characters: CharacterItem[]}>({ characters });
+  }
+
+  async function setAllowInteractionAndPersist(allowInteraction: boolean) {
+    setAllowInteraction(allowInteraction);
+    await chrome.storage.local.set<{allowInteraction: boolean}>({ allowInteraction });
   }
 
   const onAddCharacter = async () => {
@@ -63,6 +70,7 @@ export default function Settings() {
       characters: CharacterItem[],
       models: CharacterModel[],
       modelsLastUpdated: number,
+      allowInteraction: boolean,
     }>();
     let characters = stored.characters;
     if (!characters) {
@@ -81,6 +89,13 @@ export default function Settings() {
     }
     setAvailableModels(CHARACTER_MODELS.concat(models));
     setLastUpdated(modelsLastUpdated);
+
+    let allowInteraction = stored.allowInteraction;
+    if (allowInteraction === undefined) {
+      allowInteraction = true;
+      await chrome.storage.local.set({ allowInteraction });
+    }
+    setAllowInteraction(allowInteraction);
   }
 
   useEffect(() => {
@@ -101,7 +116,7 @@ export default function Settings() {
       <div className="space-y-6">
         {/* Characters Section */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">角色模型</h2>
+          <h2 className="text-lg font-semibold mb-3">角色</h2>
           <div className="space-y-2">
             {(characters || []).map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
@@ -153,17 +168,17 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Behavior</h2>
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">行为</h2>
           <div className="flex items-center space-x-2">
             <Switch
               id="allow-interaction"
               checked={allowInteraction}
-              onCheckedChange={setAllowInteraction}
+              onCheckedChange={setAllowInteractionAndPersist}
             />
-            <Label htmlFor="allow-interaction">Allow interaction</Label>
+            <Label htmlFor="allow-interaction">允许互动</Label>
           </div>
-        </div> */}
+        </div>
 
         {/* System Section */}
         <section>
