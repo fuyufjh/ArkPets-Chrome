@@ -3,7 +3,7 @@ import { Character, CharacterModel, showContextMenu } from 'arkpets'
 import { matchDomain } from './lib/utils';
 
 // Keep the active characters in JS variables to avoid re-creating all characters
-let activeCharacters: {
+const activeCharacters: {
   id: number;
   instance: Character;
 }[] = [];
@@ -11,7 +11,7 @@ let activeCharacters: {
 export {};
 
 // Initial setup when content script loads
-let settings = await chrome.storage.local.get<{
+const settings = await chrome.storage.local.get<{
   characters: CharacterItem[],
   allowInteraction: boolean,
   websiteFilter: WebsiteFilterType,
@@ -59,14 +59,14 @@ async function setup() {
 }
 
 function setCharacters(characters: CharacterItem[] = []) {
-  let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
-  let removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
-  let updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.instance.getModel().id !== character.model.id));
+  const addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
+  const removedCharacters = activeCharacters.filter(character => !characters.some(c => c.id === character.id));
+  const updatedCharacters = characters.filter(character => activeCharacters.some(c => c.id === character.id && c.instance.getModel().id !== character.model.id));
 
   removedCharacters.forEach(character => {
     const index = activeCharacters.findIndex(c => c.id === character.id);
     if (index !== -1) {
-      let instance = activeCharacters[index].instance
+      const instance = activeCharacters[index].instance
       instance.fadeOut().then(() => {
         instance.destroy();
       });

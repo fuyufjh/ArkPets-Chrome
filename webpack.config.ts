@@ -71,11 +71,17 @@ const config: Configuration = {
         { from: "src/manifest.json", to: "manifest.json" },
         { 
           from: '../ArkPets-Web/assets/models',
-          to: 'models'
+          to: 'models',
+          globOptions: {
+            ignore: ['**/.DS_Store']
+          }
         },
         {
           from: 'assets',
-          to: 'assets'
+          to: 'assets',
+          globOptions: {
+            ignore: ['**/.DS_Store']
+          }
         }
       ],
     }),

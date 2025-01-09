@@ -55,7 +55,7 @@ export async function fetchModelsData(source: Source): Promise<CharacterModel[]>
     const response = await fetch(url);
     const models = await response.json() as ModelsData;
     const operatorDirectory = models.storageDirectory["Operator"];
-    return Object.entries(models.data).filter(([key, model]) => model.type === "Operator").map(([key, model]) => ({
+    return Object.entries(models.data).filter(([_key, model]) => model.type === "Operator").map(([key, model]) => ({
         id: key,
         name: model.name,
         skeleton: `${operatorDirectory}/${key}/${model.assetList['.skel']}`,

@@ -53,7 +53,7 @@ export default function Settings() {
   }
 
   const onAddCharacter = async () => {
-    let id = Date.now(); // Use timestamp (ms) as identifier
+    const id = Date.now(); // Use timestamp (ms) as identifier
     await setCharactersAndPersist([...characters, {id, model: CHARACTER_MODELS[0]}]);
   }
 

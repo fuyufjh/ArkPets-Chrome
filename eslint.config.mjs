@@ -17,8 +17,8 @@ const eslintConfig = [
       'plugin:@typescript-eslint/recommended'
     ],
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "prefer-const": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     },
   }),
 ];
