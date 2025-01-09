@@ -216,7 +216,7 @@ export default function Settings() {
 
               <TabsContent value="blacklist">
                 <Textarea
-                  placeholder="输入黑名单域名，每行一个"
+                  placeholder="输入黑名单域名，每行一个，支持通配符 (例如 *.example.com)"
                   value={domainList}
                   onChange={(e) => setDomainListAndPersist(e.target.value)}
                   rows={4}
@@ -224,7 +224,7 @@ export default function Settings() {
               </TabsContent>
               <TabsContent value="whitelist">
                 <Textarea
-                  placeholder="输入白名单域名，每行一个"
+                  placeholder="输入白名单域名，每行一个，支持通配符 (例如 *.example.com)"
                   value={domainList}
                   onChange={(e) => setDomainList(e.target.value)}
                   rows={4}
