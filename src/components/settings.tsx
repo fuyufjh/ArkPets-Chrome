@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button } from "./ui/button"
 import { Switch } from "./ui/switch"
 import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw } from 'lucide-react'
-import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '@/lib/common'
+import { CharacterModel, CharacterItem, CHARACTER_MODELS, WebsiteFilterType } from '@/lib/common'
 import {
   Command,
   CommandEmpty,
@@ -23,8 +23,6 @@ import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Textarea } from './ui/textarea'
 
-type WebsiteFilterType = 'all' | 'blacklist' | 'whitelist'
-
 export default function Settings() {
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
@@ -42,6 +40,16 @@ export default function Settings() {
   async function setAllowInteractionAndPersist(allowInteraction: boolean) {
     setAllowInteraction(allowInteraction);
     await chrome.storage.local.set<{allowInteraction: boolean}>({ allowInteraction });
+  }
+
+  async function setWebsiteFilterAndPersist(websiteFilter: WebsiteFilterType) {
+    setWebsiteFilter(websiteFilter);
+    await chrome.storage.local.set<{websiteFilter: WebsiteFilterType}>({ websiteFilter });
+  }
+
+  async function setDomainListAndPersist(domainList: string) {
+    setDomainList(domainList);
+    await chrome.storage.local.set<{domainList: string}>({ domainList });
   }
 
   const onAddCharacter = async () => {
@@ -70,6 +78,8 @@ export default function Settings() {
       models: CharacterModel[],
       modelsLastUpdated: number,
       allowInteraction: boolean,
+      websiteFilter: WebsiteFilterType,
+      domainList: string
     }>();
     let characters = stored.characters;
     if (!characters) {
@@ -95,6 +105,20 @@ export default function Settings() {
       await chrome.storage.local.set({ allowInteraction });
     }
     setAllowInteraction(allowInteraction);
+
+    let websiteFilter = stored.websiteFilter;
+    if (websiteFilter === undefined) {
+      websiteFilter = 'all';
+      await chrome.storage.local.set({ websiteFilter });
+    }
+    setWebsiteFilter(websiteFilter);
+
+    let domainList = stored.domainList;
+    if (domainList === undefined) {
+      domainList = '';
+      await chrome.storage.local.set({ domainList });
+    }
+    setDomainList(domainList);
   }
 
   useEffect(() => {
@@ -183,7 +207,7 @@ export default function Settings() {
         <section id="section-website-filter">
           <div className="space-y-2">
             <h2 className="text-lg font-semibold">网站过滤</h2>
-            <Tabs value={websiteFilter} onValueChange={(value) => setWebsiteFilter(value as WebsiteFilterType)}>
+            <Tabs value={websiteFilter} onValueChange={(value) => setWebsiteFilterAndPersist(value as WebsiteFilterType)}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all">不过滤</TabsTrigger>
                 <TabsTrigger value="blacklist">黑名单</TabsTrigger>
@@ -194,7 +218,7 @@ export default function Settings() {
                 <Textarea
                   placeholder="输入黑名单域名，每行一个"
                   value={domainList}
-                  onChange={(e) => setDomainList(e.target.value)}
+                  onChange={(e) => setDomainListAndPersist(e.target.value)}
                   rows={4}
                 />
               </TabsContent>

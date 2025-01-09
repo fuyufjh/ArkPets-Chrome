@@ -1,5 +1,6 @@
-import { CharacterItem, CHARACTER_MODELS } from './lib/common'
+import { CharacterItem, CHARACTER_MODELS, WebsiteFilterType } from './lib/common'
 import { Character, CharacterModel, showContextMenu } from 'arkpets'
+import { matchDomain } from './lib/utils';
 
 // Keep the active characters in JS variables to avoid re-creating all characters
 let activeCharacters: {
@@ -9,26 +10,53 @@ let activeCharacters: {
 
 export {};
 
-chrome.storage.local.onChanged.addListener((changes) => {
-  if (changes.characters) {
-    setCharacters(changes.characters.newValue as CharacterItem[] | undefined);
-  }
-  if (changes.allowInteraction) {
-    setAllowInteraction(changes.allowInteraction.newValue as boolean | undefined);
-  }
-});
-
 // Initial setup when content script loads
-chrome.storage.local.get(null, (settings) => {
+let settings = await chrome.storage.local.get<{
+  characters: CharacterItem[],
+  allowInteraction: boolean,
+  websiteFilter: WebsiteFilterType,
+  domainList: string
+}>();
+
+function checkDomainList(websiteFilter: WebsiteFilterType, domain: string, patterns: string[]) {
+  switch (websiteFilter) {
+    case 'blacklist':
+      return !patterns.some(pattern => matchDomain(domain, pattern));
+    case 'whitelist':
+      return patterns.some(pattern => matchDomain(domain, pattern));
+    default:
+      return true;
+  }
+}
+
+const domain = window.location.hostname;
+if (!settings.websiteFilter || !settings.domainList
+    || checkDomainList(settings.websiteFilter, domain, settings.domainList.split('\n'))
+) {
+  await setup();
+  console.debug("ArkPets Chrome Content Script Loaded");
+}
+
+async function setup() {
   if (settings.characters) {
     setCharacters(settings.characters as CharacterItem[]);
   } else {
-    chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
+    await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
   }
   if (settings.allowInteraction) {
     setAllowInteraction(settings.allowInteraction as boolean);
   }
-});
+
+  // Changes in setting page will trigger this
+  chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.characters) {
+      setCharacters(changes.characters.newValue as CharacterItem[] | undefined);
+    }
+    if (changes.allowInteraction) {
+      setAllowInteraction(changes.allowInteraction.newValue as boolean | undefined);
+    }
+  });
+}
 
 function setCharacters(characters: CharacterItem[] = []) {
   let addedCharacters = characters.filter(character => !activeCharacters.some(c => c.id === character.id));
@@ -97,5 +125,3 @@ function setAllowInteraction(allowInteraction: boolean = true) {
     character.instance.setAllowInteract(allowInteraction);
   });
 }
-
-console.debug("ArkPets Chrome Content Script Loaded");

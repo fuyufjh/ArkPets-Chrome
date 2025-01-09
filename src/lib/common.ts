@@ -32,3 +32,5 @@ export const CHARACTER_MODELS: CharacterModel[] = [
     }
   }
 ];
+
+export type WebsiteFilterType = 'all' | 'blacklist' | 'whitelist'
