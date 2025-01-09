@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import { Switch } from "./ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"
 import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw } from 'lucide-react'
 import { CharacterModel, CharacterItem, CHARACTER_MODELS } from '@/lib/common'
 import {
@@ -28,12 +20,19 @@ import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from "../lib/utils"
 import { fetchModelsData, Source } from '../lib/resource'
 import { Label } from './ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
+import { Textarea } from './ui/textarea'
+
+type WebsiteFilterType = 'all' | 'blacklist' | 'whitelist'
 
 export default function Settings() {
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
   const [lastUpdated, setLastUpdated] = useState<number>(0)
   const [allowInteraction, setAllowInteraction] = useState<boolean>(true)
+
+  const [websiteFilter, setWebsiteFilter] = useState<WebsiteFilterType>('all')
+  const [domainList, setDomainList] = useState<string>('')
 
   async function setCharactersAndPersist(characters: CharacterItem[]) {
     setCharacters(characters);
@@ -112,10 +111,9 @@ export default function Settings() {
   }
 
   return (
-    <div className="w-[300px] h-[500px] p-4 flex flex-col">
-      <div className="space-y-6">
-        {/* Characters Section */}
-        <section>
+    <div className="w-[300px] h-[500px] p-4 flex flex-col space-y-6">
+      
+        <section id="section-characters">
           <h2 className="text-lg font-semibold mb-3">角色</h2>
           <div className="space-y-2">
             {(characters || []).map((item) => (
@@ -168,51 +166,86 @@ export default function Settings() {
           </div>
         </section>
 
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold">行为</h2>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="allow-interaction"
-              checked={allowInteraction}
-              onCheckedChange={setAllowInteractionAndPersist}
-            />
-            <Label htmlFor="allow-interaction">允许互动</Label>
+        <section id="section-behavior">
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold mb-3">行为</h2>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="allow-interaction"
+                checked={allowInteraction}
+                onCheckedChange={setAllowInteractionAndPersist}
+              />
+              <Label htmlFor="allow-interaction">允许互动</Label>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* System Section */}
-        <section>
+        <section id="section-website-filter">
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">网站过滤</h2>
+            <Tabs value={websiteFilter} onValueChange={(value) => setWebsiteFilter(value as WebsiteFilterType)}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="all">不过滤</TabsTrigger>
+                <TabsTrigger value="blacklist">黑名单</TabsTrigger>
+                <TabsTrigger value="whitelist">白名单</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="blacklist">
+                <Textarea
+                  placeholder="输入黑名单域名，每行一个"
+                  value={domainList}
+                  onChange={(e) => setDomainList(e.target.value)}
+                  rows={4}
+                />
+              </TabsContent>
+              <TabsContent value="whitelist">
+                <Textarea
+                  placeholder="输入白名单域名，每行一个"
+                  value={domainList}
+                  onChange={(e) => setDomainList(e.target.value)}
+                  rows={4}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </section>
+
+        <section id="section-system">
           <h2 className="text-lg font-semibold mb-3">系统</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                资源更新于:<br/> {new Date(lastUpdated).toLocaleString()}
+                资源更新于:<br/> {new Date(lastUpdated).toLocaleString('zh-Hans-CN')}
               </p>
               <Button variant="outline" size="sm" onClick={onUpdateResources} aria-label="更新">
                 <RefreshCcw className="w-4 h-4" />
               </Button>
             </div>
           </div>
-        </section>
-      </div>
+        </section>      
 
-      <Button 
-        variant="destructive" 
-        className="mt-4 w-full" 
-        onClick={onResetAll}
-      >
-        初始化设置
-      </Button>
+        <div className="mt-4">
+          <Button 
+            variant="destructive" 
+            className="mt-4 w-full" 
+            onClick={onResetAll}
+          >
+            初始化设置
+          </Button>
+          
+          <div className="mt-2 mb-4">
+            <a 
+              href="https://github.com/fuyufjh/ArkPets-Chrome" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center text-sm text-gray-600 hover:text-gray-800"
+            >
+              项目主页
+              <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
+            </a>
+          </div>
+        </div>
       
-      <a 
-        href="https://github.com/fuyufjh/ArkPets-Chrome" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="flex items-center justify-center mt-4 text-sm text-gray-600 hover:text-gray-800"
-      >
-        项目主页
-        <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
-      </a>
     </div>
   )
 }
