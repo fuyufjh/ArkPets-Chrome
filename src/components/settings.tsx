@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button } from "./ui/button"
 import { Switch } from "./ui/switch"
 import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw } from 'lucide-react'
-import { CharacterModel, CharacterItem, CHARACTER_MODELS, WebsiteFilterType } from '@/lib/common'
+import { CharacterModel, CharacterItem, getEmbeddedModels, WebsiteFilterType } from '@/lib/common'
 import {
   Command,
   CommandEmpty,
@@ -29,7 +29,7 @@ export default function Settings() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const [characters, setCharacters] = useState<CharacterItem[]>([])
-  const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
+  const [availableModels, setAvailableModels] = useState<CharacterModel[]>(getEmbeddedModels());
   const [lastUpdated, setLastUpdated] = useState<number>(0)
   const [allowInteraction, setAllowInteraction] = useState<boolean>(true)
 
@@ -58,7 +58,7 @@ export default function Settings() {
 
   const onAddCharacter = async () => {
     const id = Date.now(); // Use timestamp (ms) as identifier
-    await setCharactersAndPersist([...characters, {id, model: CHARACTER_MODELS[0]}]);
+    await setCharactersAndPersist([...characters, {id, model: availableModels[0]}]);
   }
 
   const onUpdateCharacter = async (id: number, model: CharacterModel) => {
@@ -90,7 +90,7 @@ export default function Settings() {
     }>();
     let characters = stored.characters;
     if (!characters) {
-      characters = [{id: Date.now(), model: CHARACTER_MODELS[0]}];
+      characters = [{id: Date.now(), model: getEmbeddedModels()[0]}];
       await chrome.storage.local.set<{characters: CharacterItem[]}>({ characters });
     }
     setCharacters(characters);
@@ -108,7 +108,7 @@ export default function Settings() {
       console.log(`${models.length} models downloaded`);
       await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
     }
-    setAvailableModels(CHARACTER_MODELS.concat(models));
+    setAvailableModels(getEmbeddedModels().concat(models));
     setLastUpdated(modelsLastUpdated);
 
     let allowInteraction = stored.allowInteraction;
@@ -145,7 +145,7 @@ export default function Settings() {
     console.log(`${models.length} models downloaded`);
     const modelsVersion = chrome.runtime.getManifest().version;
     await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
-    setAvailableModels(CHARACTER_MODELS.concat(models));
+    setAvailableModels(getEmbeddedModels().concat(models));
     setLastUpdated(modelsLastUpdated);
   }
 

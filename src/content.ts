@@ -1,4 +1,4 @@
-import { CharacterItem, CHARACTER_MODELS, WebsiteFilterType } from './lib/common'
+import { CharacterItem, getEmbeddedModels, WebsiteFilterType } from './lib/common'
 import { Character, CharacterModel, showContextMenu } from 'arkpets'
 import { matchDomain } from './lib/utils';
 
@@ -41,7 +41,7 @@ async function setup() {
   if (settings.characters) {
     setCharacters(settings.characters as CharacterItem[]);
   } else {
-    await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
+    await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: getEmbeddedModels()[0]}] });
   }
   if (settings.allowInteraction !== undefined) {
     setAllowInteraction(settings.allowInteraction as boolean);
