@@ -42,4 +42,4 @@ yarn-error.log*
 next-env.d.ts
 
 # build
-arkpets-chrome-*.zip
+arkpets-*.zip
