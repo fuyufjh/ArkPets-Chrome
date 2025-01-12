@@ -1,6 +1,8 @@
 ArkPets Chrome Extension
 ==============
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/laeififkebmljoilogkbjkgeojbjlebl)](https://chromewebstore.google.com/detail/laeififkebmljoilogkbjkgeojbjlebl)
+
 基于 [ArkPets-Web](https://github.com/fuyufjh/ArkPets-Web) 开发的明日方舟桌宠 Chrome 扩展，可以把 2D 干员模型显示在任意网页上。
 
 Based on [ArkPets-Web](https://github.com/fuyufjh/ArkPets-Web), this Chrome extension displays 2D operator models on any webpage.
