@@ -55,12 +55,23 @@ export async function fetchModelsData(source: Source): Promise<CharacterModel[]>
     const response = await fetch(url);
     const models = await response.json() as ModelsData;
     const operatorDirectory = models.storageDirectory["Operator"];
-    return Object.entries(models.data).filter(([_key, model]) => model.type === "Operator").map(([key, model]) => ({
-        id: key,
-        name: model.name,
-        skeleton: `${operatorDirectory}/${key}/${model.assetList['.skel']}`,
-        atlas: `${operatorDirectory}/${key}/${model.assetList['.atlas']}`,
-        texture: `${operatorDirectory}/${key}/${model.assetList['.png']}`,
-        resourcePath: getModelBaseUrl(source),
-    } as CharacterModel));
+    return Object.entries(models.data)
+      .filter(([_, model]) => model.type === "Operator")
+      .map(([key, model]) => {
+        const m = {
+            id: key,
+            name: model.name,
+            skeleton: `${operatorDirectory}/${key}/${model.assetList['.skel']}`,
+            atlas: `${operatorDirectory}/${key}/${model.assetList['.atlas']}`,
+            texture: `${operatorDirectory}/${key}/${model.assetList['.png']}`,
+            resourcePath: getModelBaseUrl(source),
+        } as CharacterModel;
+        if (model.skinGroupId !== 'DEFAULT') {
+            m.skinId = model.skinGroupId;
+        }
+        if (model.skinGroupName !== '默认服装') {
+            m.skinName = model.skinGroupName;
+        }
+        return m;
+    });
 }

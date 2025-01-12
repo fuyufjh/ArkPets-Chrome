@@ -1,5 +1,9 @@
-import type { CharacterModel } from 'arkpets'
-export type { CharacterModel }
+import type { CharacterModel as BasicCharacterModel } from 'arkpets'
+
+export interface CharacterModel extends BasicCharacterModel {
+  skinId?: string;
+  skinName?: string;
+}
 
 export interface CharacterItem {
   id: number;

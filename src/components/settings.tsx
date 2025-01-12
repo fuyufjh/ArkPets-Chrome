@@ -22,6 +22,7 @@ import { fetchModelsData, Source } from '../lib/resource'
 import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Textarea } from './ui/textarea'
+import { Badge } from './ui/badge'
 
 export default function Settings() {
   const [characters, setCharacters] = useState<CharacterItem[]>([])
@@ -153,7 +154,7 @@ export default function Settings() {
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
+                  <PopoverContent className="w-[250px] p-0 ml-4">
                     <Command>
                       <CommandInput placeholder="查找模型..." />
                       <CommandList>
@@ -164,14 +165,20 @@ export default function Settings() {
                               key={model.id}
                               value={model.id + " " + model.name}
                               onSelect={() => onUpdateCharacter(item.id, model)}
+                              className="flex items-center whitespace-nowrap overflow-x-auto"
                             >
                               <Check
                                 className={cn(
-                                  "mr-2 h-4 w-4",
+                                  "mr-2 h-4 w-4 flex-shrink-0",
                                   item.model.id === model.id ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {model.name}
+                              <span className="truncate">{model.name}</span>
+                              {model.skinName && (
+                                <Badge variant="secondary" className="ml-2 flex-shrink-0">
+                                  {model.skinName}
+                                </Badge>
+                              )}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -185,7 +192,7 @@ export default function Settings() {
               </div>
             ))}
             <Button onClick={onAddCharacter} className="w-full mt-2">
-              <Plus className="h-4 w-4 mr-2" /> Add Character
+              <Plus className="h-4 w-4 mr-2" /> 增加角色
             </Button>
           </div>
         </section>
