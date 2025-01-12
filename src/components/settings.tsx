@@ -264,7 +264,7 @@ export default function Settings() {
           <h2 className="text-lg font-semibold mb-3">系统</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 资源更新于:<br/> {new Date(lastUpdated).toLocaleString('zh-Hans-CN')}
               </p>
               <Button variant="outline" size="sm" onClick={onUpdateResources} aria-label="更新">
@@ -288,7 +288,7 @@ export default function Settings() {
               href="https://github.com/fuyufjh/ArkPets-Chrome" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center text-sm text-gray-600 hover:text-gray-800"
+              className="flex items-center justify-center text-sm text-muted-foreground hover:text-foreground"
             >
               项目主页
               <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
