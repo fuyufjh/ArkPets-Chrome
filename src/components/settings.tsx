@@ -25,6 +25,9 @@ import { Textarea } from './ui/textarea'
 import { Badge } from './ui/badge'
 
 export default function Settings() {
+  // During loading config from storage, don't render the UI
+  const [loading, setLoading] = useState<boolean>(true);
+
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(CHARACTER_MODELS);
   const [lastUpdated, setLastUpdated] = useState<number>(0)
@@ -68,7 +71,9 @@ export default function Settings() {
 
   const onResetAll = async () => {
     await chrome.storage.local.clear();
+    setLoading(true);
     await loadFromStorage();
+    setLoading(false);
   }
 
   // Load characters from storage when opening
@@ -129,7 +134,9 @@ export default function Settings() {
   }
 
   useEffect(() => {
-     loadFromStorage();
+    loadFromStorage().then(() => {
+      setLoading(false);
+    });
   }, [])
 
   const onUpdateResources = async () => {
@@ -142,6 +149,11 @@ export default function Settings() {
     setLastUpdated(modelsLastUpdated);
   }
 
+  if (loading) {
+    // During loading config from storage, don't render the UI
+    // It's supposed to be very fast that user won't notice.
+    return <div className="w-[300px] h-[500px]"></div>;
+  }
   return (
     <div className="w-[300px] h-[500px] p-4 flex flex-col space-y-6">
       
