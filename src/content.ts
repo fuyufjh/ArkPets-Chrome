@@ -43,7 +43,7 @@ async function setup() {
   } else {
     await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: CHARACTER_MODELS[0]}] });
   }
-  if (settings.allowInteraction) {
+  if (settings.allowInteraction !== undefined) {
     setAllowInteraction(settings.allowInteraction as boolean);
   }
 
@@ -124,4 +124,5 @@ function setAllowInteraction(allowInteraction: boolean = true) {
   activeCharacters.forEach(character => {
     character.instance.setAllowInteract(allowInteraction);
   });
+  console.debug(`Allow interaction set to ${allowInteraction}`);
 }
