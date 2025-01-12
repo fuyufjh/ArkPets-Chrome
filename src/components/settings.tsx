@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "./ui/popover"
 import { Check, ChevronsUpDown } from 'lucide-react'
-import { cn } from "../lib/utils"
+import { cn, compareSemver } from "../lib/utils"
 import { fetchModelsData, Source } from '../lib/resource'
 import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
@@ -78,6 +78,7 @@ export default function Settings() {
       characters: CharacterItem[],
       models: CharacterModel[],
       modelsLastUpdated: number,
+      modelsVersion: string,
       allowInteraction: boolean,
       websiteFilter: WebsiteFilterType,
       domainList: string
@@ -91,11 +92,16 @@ export default function Settings() {
 
     let models = stored.models;
     let modelsLastUpdated = stored.modelsLastUpdated;
-    if (!models) {
+    let modelsVersion = stored.modelsVersion;
+    // If the models have not been downloaded, download them
+    // If the models were downloaded but the version is older than the current version, update them
+    const currentVersion = chrome.runtime.getManifest().version;
+    if (!models || compareSemver(currentVersion, modelsVersion)) {
       models = await fetchModelsData(Source.GitHub);
       modelsLastUpdated = Date.now();
+      modelsVersion = currentVersion;
       console.log(`${models.length} models downloaded`);
-      await chrome.storage.local.set({ models, modelsLastUpdated });
+      await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
     }
     setAvailableModels(CHARACTER_MODELS.concat(models));
     setLastUpdated(modelsLastUpdated);
@@ -130,7 +136,8 @@ export default function Settings() {
     const models = await fetchModelsData(Source.GitHub);
     const modelsLastUpdated = Date.now();
     console.log(`${models.length} models downloaded`);
-    await chrome.storage.local.set({ models, modelsLastUpdated });
+    const modelsVersion = chrome.runtime.getManifest().version;
+    await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
     setAvailableModels(CHARACTER_MODELS.concat(models));
     setLastUpdated(modelsLastUpdated);
   }
