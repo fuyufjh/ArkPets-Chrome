@@ -70,7 +70,7 @@ const config: Configuration = {
       patterns: [
         { from: "src/manifest.json", to: "manifest.json" },
         { 
-          from: '../ArkPets-Web/assets/models',
+          from: 'ArkPets-Web/assets/models',
           to: 'models',
           globOptions: {
             ignore: ['**/.DS_Store']
