@@ -13,16 +13,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: $0 [-t|--target chrome|edge]"
+            echo "Usage: $0 [-t|--target chrome|edge|firefox]"
             exit 1
             ;;
     esac
 done
 
 # Validate target
-if [[ "$TARGET" != "chrome" && "$TARGET" != "edge" ]]; then
+if [[ "$TARGET" != "chrome" && "$TARGET" != "edge" && "$TARGET" != "firefox" ]]; then
     echo "Invalid target: $TARGET"
-    echo "Target must be either 'chrome' or 'edge'"
+    echo "Target must be either 'chrome', 'edge', or 'firefox'"
     exit 1
 fi
 
@@ -43,17 +43,36 @@ fi
 # Build the ArkPets-Web
 echo "Building ArkPets-Web..."
 pushd ArkPets-Web
+npm install
 npm run build
 popd
 
 # Build the project
 echo "Building version $MANIFEST_VERSION..."
+npm install
 npm run build
 
-# Modify manifest for Edge if needed
+# Function to perform portable sed in-place replacement
+sed_in_place() {
+    local pattern="$1"
+    local file="$2"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS/BSD sed requires an extension argument
+        sed -i '' "$pattern" "$file"
+    else
+        # GNU sed (Linux) works without an extension
+        sed -i "$pattern" "$file"
+    fi
+}
+
+# Modify manifest for Edge/Firefox if needed
 if [ "$TARGET" = "edge" ]; then
     echo "Modifying manifest.json for Edge..."
-    sed -i 's/Chrome/Edge/g' dist/manifest.json
+    sed_in_place 's/Chrome/Edge/g' dist/manifest.json
+elif [ "$TARGET" = "firefox" ]; then
+    echo "Modifying manifest.json for Firefox..."
+    # Add-on names cannot contain the Mozilla or Firefox trademarks :D
+    sed_in_place 's/ Chrome//g' dist/manifest.json
 fi
 
 # Create zip file with version number

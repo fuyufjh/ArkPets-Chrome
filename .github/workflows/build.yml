@@ -36,20 +36,11 @@ jobs:
     - name: Build Chrome version
       run: ./build.sh -t chrome
 
-    - name: Build Edge version
-      run: ./build.sh -t edge
-
     - name: Upload Chrome artifact
       uses: actions/upload-artifact@v4
       with:
         name: chrome-extension
         path: arkpets-chrome-*.zip
-        
-    - name: Upload Edge artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: edge-extension
-        path: arkpets-edge-*.zip
 
     # Create GitHub Release when a tag is pushed
     - name: Create Release
@@ -58,6 +49,5 @@ jobs:
       with:
         files: |
           arkpets-chrome-*.zip
-          arkpets-edge-*.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
