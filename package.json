@@ -6,7 +6,7 @@
     "watch": "webpack build --watch --mode development",
     "build": "webpack --mode production",
     "lint": "eslint src",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",
