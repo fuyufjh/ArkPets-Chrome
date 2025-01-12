@@ -38,11 +38,13 @@ if (!settings.websiteFilter || !settings.domainList
 }
 
 async function setup() {
-  if (settings.characters) {
-    setCharacters(settings.characters as CharacterItem[]);
-  } else {
-    await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: [{id: Date.now(), model: getEmbeddedModels()[0]}] });
+  if (settings.characters === undefined) {
+    // This is the first time the extension is loaded. Initialize with a default character.
+    settings.characters = [{id: Date.now(), model: getEmbeddedModels()[0]}];
+    await chrome.storage.local.set<{characters: CharacterItem[]}>({characters: settings.characters});
   }
+  setCharacters(settings.characters as CharacterItem[]);
+
   if (settings.allowInteraction !== undefined) {
     setAllowInteraction(settings.allowInteraction as boolean);
   }

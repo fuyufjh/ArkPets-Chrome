@@ -90,6 +90,7 @@ export default function Settings() {
     }>();
     let characters = stored.characters;
     if (!characters) {
+      // This is the first time the extension is loaded. Initialize with a default character.
       characters = [{id: Date.now(), model: getEmbeddedModels()[0]}];
       await chrome.storage.local.set<{characters: CharacterItem[]}>({ characters });
     }
