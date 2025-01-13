@@ -105,10 +105,10 @@ export default function Settings() {
     }
     setCharacters(characters);
 
-    let models = stored.models;
-    let modelsLastUpdated = stored.modelsLastUpdated;
-    let modelsVersion = stored.modelsVersion;
-    let modelsSource = stored.modelsSource;
+    const models = stored.models;
+    const modelsLastUpdated = stored.modelsLastUpdated;
+    const modelsVersion = stored.modelsVersion;
+    const modelsSource = stored.modelsSource;
     // If the models have not been downloaded, download them
     // If the models were downloaded but the version is older than the current version, update them
     const currentVersion = chrome.runtime.getManifest().version;
