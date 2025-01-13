@@ -30,8 +30,7 @@ export default function Settings() {
 
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(getEmbeddedModels());
-  const [lastUpdated, setLastUpdated] = useState<number | undefined>(undefined)
-  const [modelsSource, setModelsSource] = useState<Source | undefined>(undefined)
+  const [modelsInfo, setModelsInfo] = useState<string>('N/A');
 
   const [allowInteraction, setAllowInteraction] = useState<boolean>(true)
 
@@ -112,8 +111,7 @@ export default function Settings() {
       fetchModelsAndPersist(); // fetch models in background
     }
     setAvailableModels(getEmbeddedModels().concat(models || []));
-    setLastUpdated(modelsLastUpdated);
-    setModelsSource(modelsSource);
+    setModelsInfo(modelsLastUpdated ? `模型资源上次更新于 ${new Date(modelsLastUpdated).toLocaleString('zh-Hans-CN')} 来自 ${modelsSource}` : '还未下载过模型资源');
 
     let allowInteraction = stored.allowInteraction;
     if (allowInteraction === undefined) {
@@ -160,9 +158,9 @@ export default function Settings() {
           modelsSource: source
       });
       setAvailableModels(getEmbeddedModels().concat(models));
-      setLastUpdated(modelsLastUpdated);
-      setModelsSource(source);
+      setModelsInfo(`资源更新完成！从 ${source} 获取了 ${models.length} 个模型信息`);
     } catch (error) {
+      setModelsInfo('⚠️ 模型资源下载失败！右键打开控制台查看详细原因');
       console.error('Failed to fetch models from all sources:', error);
     } finally {
       setIsModelsFetching(false);
@@ -291,8 +289,7 @@ export default function Settings() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                模型索引更新于:<br/> {lastUpdated ? new Date(lastUpdated).toLocaleString('zh-Hans-CN') : 'Never'}
-                &nbsp;来自 {modelsSource ? modelsSource : 'N/A'}
+                {modelsInfo}
               </p>
               <Button variant="outline" size="sm" onClick={fetchModelsAndPersist} aria-label="更新">
                 {isModelsFetching ? (
