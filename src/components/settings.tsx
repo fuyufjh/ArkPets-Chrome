@@ -138,31 +138,29 @@ export default function Settings() {
   // Fetch models from remote source and persist to storage
   async function fetchModelsAndPersist() {
     const controllers = [new AbortController(), new AbortController()];
+    const [models, source] = await Promise.any([
+        fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
+        fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
+    ]).catch((err) => {
+        console.error('Failed to fetch models from all sources:', err);
+        return Promise.reject();
+    });
     
-    try {
-        const [models, source] = await Promise.race([
-            fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
-            fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
-        ]);
-        
-        // Cancel the other ongoing request
-        controllers.forEach(c => c.abort());
-        
-        const modelsLastUpdated = Date.now();
-        console.log(`${models.length} models downloaded from ${source}`);
-        const modelsVersion = chrome.runtime.getManifest().version;
-        await chrome.storage.local.set({ 
-            models, 
-            modelsLastUpdated, 
-            modelsVersion,
-            modelsSource: source // Store which source succeeded
-        });
-        setAvailableModels(getEmbeddedModels().concat(models));
-        setLastUpdated(modelsLastUpdated);
-        setModelsSource(source);
-    } catch (error) {
-        console.error('Failed to fetch models:', error);
-    }
+    // Cancel the other ongoing request
+    controllers.forEach(c => c.abort());
+    
+    const modelsLastUpdated = Date.now();
+    console.log(`${models.length} models downloaded from ${source}`);
+    const modelsVersion = chrome.runtime.getManifest().version;
+    await chrome.storage.local.set({ 
+        models, 
+        modelsLastUpdated, 
+        modelsVersion,
+        modelsSource: source
+    });
+    setAvailableModels(getEmbeddedModels().concat(models));
+    setLastUpdated(modelsLastUpdated);
+    setModelsSource(source);
   }
 
   useEffect(() => {
