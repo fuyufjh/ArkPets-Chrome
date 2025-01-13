@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from "./ui/button"
 import { Switch } from "./ui/switch"
-import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw } from 'lucide-react'
+import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw, Loader2 } from 'lucide-react'
 import { CharacterModel, CharacterItem, getEmbeddedModels, WebsiteFilterType } from '@/lib/common'
 import {
   Command,
@@ -37,6 +37,8 @@ export default function Settings() {
 
   const [websiteFilter, setWebsiteFilter] = useState<WebsiteFilterType>('all')
   const [domainList, setDomainList] = useState<string>('')
+
+  const [isModelsFetching, setIsModelsFetching] = useState<boolean>(false);
 
   async function setCharactersAndPersist(characters: CharacterItem[]) {
     setCharacters(characters);
@@ -137,30 +139,34 @@ export default function Settings() {
 
   // Fetch models from remote source and persist to storage
   async function fetchModelsAndPersist() {
-    const controllers = [new AbortController(), new AbortController()];
-    const [models, source] = await Promise.any([
-        fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
-        fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
-    ]).catch((err) => {
-        console.error('Failed to fetch models from all sources:', err);
-        return Promise.reject();
-    });
-    
-    // Cancel the other ongoing request
-    controllers.forEach(c => c.abort());
-    
-    const modelsLastUpdated = Date.now();
-    console.log(`${models.length} models downloaded from ${source}`);
-    const modelsVersion = chrome.runtime.getManifest().version;
-    await chrome.storage.local.set({ 
-        models, 
-        modelsLastUpdated, 
-        modelsVersion,
-        modelsSource: source
-    });
-    setAvailableModels(getEmbeddedModels().concat(models));
-    setLastUpdated(modelsLastUpdated);
-    setModelsSource(source);
+    setIsModelsFetching(true);
+    try {
+      const controllers = [new AbortController(), new AbortController()];
+      const [models, source] = await Promise.any([
+          fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
+          fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
+      ]);
+      
+      // Cancel the other ongoing request
+      controllers.forEach(c => c.abort());
+      
+      const modelsLastUpdated = Date.now();
+      console.log(`${models.length} models downloaded from ${source}`);
+      const modelsVersion = chrome.runtime.getManifest().version;
+      await chrome.storage.local.set({ 
+          models, 
+          modelsLastUpdated, 
+          modelsVersion,
+          modelsSource: source
+      });
+      setAvailableModels(getEmbeddedModels().concat(models));
+      setLastUpdated(modelsLastUpdated);
+      setModelsSource(source);
+    } catch (error) {
+      console.error('Failed to fetch models from all sources:', error);
+    } finally {
+      setIsModelsFetching(false);
+    }
   }
 
   useEffect(() => {
@@ -286,10 +292,14 @@ export default function Settings() {
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 模型索引更新于:<br/> {lastUpdated ? new Date(lastUpdated).toLocaleString('zh-Hans-CN') : 'Never'}
-                &nbsp;来自 {modelsSource ? modelsSource : '未知'}
+                &nbsp;来自 {modelsSource ? modelsSource : 'N/A'}
               </p>
               <Button variant="outline" size="sm" onClick={fetchModelsAndPersist} aria-label="更新">
-                <RefreshCcw className="w-4 h-4" />
+                {isModelsFetching ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCcw className="w-4 h-4" />
+                )}
               </Button>
             </div>
           </div>
