@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from "./ui/button"
 import { Switch } from "./ui/switch"
-import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw, Loader2 } from 'lucide-react'
+import { Trash2, Plus, SquareArrowUpRightIcon, RefreshCcw, Loader2, ChevronDown, Check, ChevronsUpDown } from 'lucide-react'
 import { CharacterModel, CharacterItem, getEmbeddedModels, WebsiteFilterType } from '@/lib/common'
 import {
   Command,
@@ -16,13 +16,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover"
-import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn, compareSemver } from "../lib/utils"
 import { fetchModelsData, Source } from '../lib/resource'
 import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Textarea } from './ui/textarea'
 import { Badge } from './ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
 export default function Settings() {
   // During loading config from storage, don't render the UI
@@ -136,32 +141,46 @@ export default function Settings() {
   }
 
   // Fetch models from remote source and persist to storage
-  async function fetchModelsAndPersist() {
+  async function fetchModelsAndPersist(specificSource?: Source) {
     setIsModelsFetching(true);
     try {
-      const controllers = [new AbortController(), new AbortController()];
-      const [models, source] = await Promise.any([
-          fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
-          fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
-      ]);
-      
-      // Cancel the other ongoing request
-      controllers.forEach(c => c.abort());
-      
-      const modelsLastUpdated = Date.now();
-      console.log(`${models.length} models downloaded from ${source}`);
-      const modelsVersion = chrome.runtime.getManifest().version;
-      await chrome.storage.local.set({ 
-          models, 
-          modelsLastUpdated, 
-          modelsVersion,
-          modelsSource: source
-      });
-      setAvailableModels(getEmbeddedModels().concat(models));
-      setModelsInfo(`资源更新完成！从 ${source} 获取了 ${models.length} 个模型信息`);
+      if (specificSource) {
+        // If a specific source is provided, only fetch from that source
+        const [models, source] = [await fetchModelsData(specificSource), specificSource] as const;
+        const modelsLastUpdated = Date.now();
+        console.log(`${models.length} models downloaded from ${source}`);
+        const modelsVersion = chrome.runtime.getManifest().version;
+        await chrome.storage.local.set({ 
+            models, 
+            modelsLastUpdated, 
+            modelsVersion,
+            modelsSource: source
+        });
+        setAvailableModels(getEmbeddedModels().concat(models));
+        setModelsInfo(`资源更新完成！从 ${source} 获取了 ${models.length} 个模型信息`);
+      } else {
+        // Original race behavior when no specific source is provided
+        const controllers = [new AbortController(), new AbortController()];
+        const [models, source] = await Promise.any([
+            fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
+            fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
+        ]);
+        controllers.forEach(c => c.abort());
+        const modelsLastUpdated = Date.now();
+        console.log(`${models.length} models downloaded from ${source}`);
+        const modelsVersion = chrome.runtime.getManifest().version;
+        await chrome.storage.local.set({ 
+            models, 
+            modelsLastUpdated, 
+            modelsVersion,
+            modelsSource: source
+        });
+        setAvailableModels(getEmbeddedModels().concat(models));
+        setModelsInfo(`资源更新完成！从 ${source} 获取了 ${models.length} 个模型信息`);
+      }
     } catch (error) {
       setModelsInfo('⚠️ 模型资源下载失败！右键打开控制台查看详细原因');
-      console.error('Failed to fetch models from all sources:', error);
+      console.error('Failed to fetch models:', error);
     } finally {
       setIsModelsFetching(false);
     }
@@ -179,8 +198,8 @@ export default function Settings() {
     return <div className="w-[300px] h-[500px]"></div>;
   }
   return (
-    <div className="w-[300px] h-[500px] p-4 flex flex-col space-y-6">
-      
+    <div className="w-[300px] h-[500px] p-4">
+      <div className="flex flex-col space-y-6">
         <section id="section-characters">
           <h2 className="text-lg font-semibold mb-3">角色</h2>
           <div className="space-y-2">
@@ -291,39 +310,64 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">
                 {modelsInfo}
               </p>
-              <Button variant="outline" size="sm" onClick={fetchModelsAndPersist} aria-label="更新">
-                {isModelsFetching ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCcw className="w-4 h-4" />
-                )}
-              </Button>
+              <div className="flex">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => fetchModelsAndPersist()} 
+                  aria-label="更新"
+                  className="rounded-r-none ml-1"
+                >
+                  {isModelsFetching ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="w-4 h-4" />
+                  )}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="rounded-l-none w-5 px-0 ml-[-1px]"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => fetchModelsAndPersist(Source.GitHub)}>
+                      从 GitHub 更新
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => fetchModelsAndPersist(Source.Gitee)}>
+                      从 Gitee 更新
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </section>      
-
-        <div className="mt-4">
-          <Button 
-            variant="destructive" 
-            className="mt-4 w-full" 
-            onClick={onResetAll}
+      </div>
+      <div className="mt-2">
+        <Button 
+          variant="destructive" 
+          className="mt-2 w-full" 
+          onClick={onResetAll}
+        >
+          初始化设置
+        </Button>
+        <div className="mt-2 pb-2">
+          <a 
+            href="https://github.com/fuyufjh/ArkPets-Chrome/issues" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-center text-sm text-muted-foreground hover:text-foreground"
           >
-            初始化设置
-          </Button>
-          
-          <div className="mt-2 mb-4">
-            <a 
-              href="https://github.com/fuyufjh/ArkPets-Chrome" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center justify-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              项目主页
-              <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
-            </a>
-          </div>
+            问题反馈
+            <SquareArrowUpRightIcon className="ml-1 w-4 h-4" />
+          </a>
         </div>
-      
+      </div>
     </div>
   )
 }
