@@ -1,7 +1,8 @@
 import { CharacterModel } from './common'
 
 export enum Source {
-    GitHub = "github",
+    GitHub = "GitHub",
+    Gitee = "Gitee",
 }
 
 // Data structure of https://github.com/isHarryh/Ark-Models/blob/main/models_data.json
@@ -40,6 +41,8 @@ function getModelsDataUrl(source: Source): string {
     switch (source) {
         case Source.GitHub:
             return `https://raw.githubusercontent.com/isHarryh/Ark-Models/refs/heads/main/models_data.json`;
+        case Source.Gitee:
+            return `https://gitee.com/fuyufjh/Ark-Models/raw/main/models_data.json`;
     }
 }
 
@@ -47,12 +50,14 @@ function getModelBaseUrl(source: Source): string {
     switch (source) {
         case Source.GitHub:
             return `https://raw.githubusercontent.com/isHarryh/Ark-Models/refs/heads/main/`;
+        case Source.Gitee:
+            return `https://gitee.com/fuyufjh/Ark-Models/raw/main/`;
     }
 }
 
-export async function fetchModelsData(source: Source): Promise<CharacterModel[]> {
+export async function fetchModelsData(source: Source, signal?: AbortSignal): Promise<CharacterModel[]> {
     const url = getModelsDataUrl(source);
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     const models = await response.json() as ModelsData;
     const operatorDirectory = models.storageDirectory["Operator"];
     return Object.entries(models.data)

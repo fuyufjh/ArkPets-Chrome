@@ -30,7 +30,9 @@ export default function Settings() {
 
   const [characters, setCharacters] = useState<CharacterItem[]>([])
   const [availableModels, setAvailableModels] = useState<CharacterModel[]>(getEmbeddedModels());
-  const [lastUpdated, setLastUpdated] = useState<number>(0)
+  const [lastUpdated, setLastUpdated] = useState<number | undefined>(undefined)
+  const [modelsSource, setModelsSource] = useState<Source | undefined>(undefined)
+
   const [allowInteraction, setAllowInteraction] = useState<boolean>(true)
 
   const [websiteFilter, setWebsiteFilter] = useState<WebsiteFilterType>('all')
@@ -80,13 +82,14 @@ export default function Settings() {
   // It will also initialize the storage if it's empty
   async function loadFromStorage() {
     const stored = await chrome.storage.local.get<{
-      characters: CharacterItem[],
-      models: CharacterModel[],
-      modelsLastUpdated: number,
-      modelsVersion: string,
-      allowInteraction: boolean,
-      websiteFilter: WebsiteFilterType,
-      domainList: string
+      characters?: CharacterItem[],
+      models?: CharacterModel[],
+      modelsLastUpdated?: number,
+      modelsVersion?: string,
+      modelsSource?: Source,
+      allowInteraction?: boolean,
+      websiteFilter?: WebsiteFilterType,
+      domainList?: string
     }>();
     let characters = stored.characters;
     if (!characters) {
@@ -99,18 +102,16 @@ export default function Settings() {
     let models = stored.models;
     let modelsLastUpdated = stored.modelsLastUpdated;
     let modelsVersion = stored.modelsVersion;
+    let modelsSource = stored.modelsSource;
     // If the models have not been downloaded, download them
     // If the models were downloaded but the version is older than the current version, update them
     const currentVersion = chrome.runtime.getManifest().version;
-    if (!models || compareSemver(currentVersion, modelsVersion)) {
-      models = await fetchModelsData(Source.GitHub);
-      modelsLastUpdated = Date.now();
-      modelsVersion = currentVersion;
-      console.log(`${models.length} models downloaded`);
-      await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
+    if (!models || !modelsVersion || compareSemver(currentVersion, modelsVersion)) {
+      fetchModelsAndPersist(); // fetch models in background
     }
-    setAvailableModels(getEmbeddedModels().concat(models));
+    setAvailableModels(getEmbeddedModels().concat(models || []));
     setLastUpdated(modelsLastUpdated);
+    setModelsSource(modelsSource);
 
     let allowInteraction = stored.allowInteraction;
     if (allowInteraction === undefined) {
@@ -134,21 +135,41 @@ export default function Settings() {
     setDomainList(domainList);
   }
 
+  // Fetch models from remote source and persist to storage
+  async function fetchModelsAndPersist() {
+    const controllers = [new AbortController(), new AbortController()];
+    
+    try {
+        const [models, source] = await Promise.race([
+            fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
+            fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
+        ]);
+        
+        // Cancel the other ongoing request
+        controllers.forEach(c => c.abort());
+        
+        const modelsLastUpdated = Date.now();
+        console.log(`${models.length} models downloaded from ${source}`);
+        const modelsVersion = chrome.runtime.getManifest().version;
+        await chrome.storage.local.set({ 
+            models, 
+            modelsLastUpdated, 
+            modelsVersion,
+            modelsSource: source // Store which source succeeded
+        });
+        setAvailableModels(getEmbeddedModels().concat(models));
+        setLastUpdated(modelsLastUpdated);
+        setModelsSource(source);
+    } catch (error) {
+        console.error('Failed to fetch models:', error);
+    }
+  }
+
   useEffect(() => {
     loadFromStorage().then(() => {
       setLoading(false);
     });
   }, [])
-
-  const onUpdateResources = async () => {
-    const models = await fetchModelsData(Source.GitHub);
-    const modelsLastUpdated = Date.now();
-    console.log(`${models.length} models downloaded`);
-    const modelsVersion = chrome.runtime.getManifest().version;
-    await chrome.storage.local.set({ models, modelsLastUpdated, modelsVersion });
-    setAvailableModels(getEmbeddedModels().concat(models));
-    setLastUpdated(modelsLastUpdated);
-  }
 
   if (loading) {
     // During loading config from storage, don't render the UI
@@ -266,9 +287,10 @@ export default function Settings() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                资源更新于:<br/> {new Date(lastUpdated).toLocaleString('zh-Hans-CN')}
+                模型索引更新于:<br/> {lastUpdated ? new Date(lastUpdated).toLocaleString('zh-Hans-CN') : 'Never'}
+                &nbsp;来自 {modelsSource ? modelsSource : '未知'}
               </p>
-              <Button variant="outline" size="sm" onClick={onUpdateResources} aria-label="更新">
+              <Button variant="outline" size="sm" onClick={fetchModelsAndPersist} aria-label="更新">
                 <RefreshCcw className="w-4 h-4" />
               </Button>
             </div>

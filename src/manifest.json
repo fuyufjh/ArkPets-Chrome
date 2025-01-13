@@ -13,7 +13,8 @@
     "128": "assets/icon128.png"
   },
   "host_permissions": [
-    "https://raw.githubusercontent.com/*"
+    "https://raw.githubusercontent.com/*",
+    "https://gitee.com/fuyufjh/Ark-Models/raw/*"
   ],
   "action": {
     "default_popup": "index.html"

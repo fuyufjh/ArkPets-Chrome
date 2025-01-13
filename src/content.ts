@@ -12,10 +12,10 @@ export {};
 
 // Initial setup when content script loads
 const settings = await chrome.storage.local.get<{
-  characters: CharacterItem[],
-  allowInteraction: boolean,
-  websiteFilter: WebsiteFilterType,
-  domainList: string
+  characters?: CharacterItem[],
+  allowInteraction?: boolean,
+  websiteFilter?: WebsiteFilterType,
+  domainList?: string
 }>();
 
 function checkDomainList(websiteFilter: WebsiteFilterType, domain: string, patterns: string[]) {
@@ -46,7 +46,7 @@ async function setup() {
   setCharacters(settings.characters as CharacterItem[]);
 
   if (settings.allowInteraction !== undefined) {
-    setAllowInteraction(settings.allowInteraction as boolean);
+    setAllowInteraction(settings.allowInteraction);
   }
 
   // Changes in setting page will trigger this
