@@ -2,7 +2,8 @@ import { CharacterModel } from './common'
 
 export enum Source {
     GitHub = "GitHub",
-    Gitee = "Gitee",
+    Official = "官网",
+    Gitee = "Gitee", // Deprecated
 }
 
 // Data structure of https://github.com/isHarryh/Ark-Models/blob/main/models_data.json
@@ -43,6 +44,8 @@ function getModelsDataUrl(source: Source): string {
             return `https://raw.githubusercontent.com/isHarryh/Ark-Models/refs/heads/main/models_data.json`;
         case Source.Gitee:
             return `https://gitee.com/fuyufjh/Ark-Models/raw/main/models_data.json`;
+        case Source.Official:
+            return `https://arkpets.ericfu.me/Ark-Models/models_data.json`;
     }
 }
 
@@ -52,6 +55,8 @@ function getModelBaseUrl(source: Source): string {
             return `https://raw.githubusercontent.com/isHarryh/Ark-Models/refs/heads/main/`;
         case Source.Gitee:
             return `https://gitee.com/fuyufjh/Ark-Models/raw/main/`;
+        case Source.Official:
+            return `https://arkpets.ericfu.me/Ark-Models/`;
     }
 }
 

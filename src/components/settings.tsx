@@ -163,7 +163,7 @@ export default function Settings() {
         const controllers = [new AbortController(), new AbortController()];
         const [models, source] = await Promise.any([
             fetchModelsData(Source.GitHub, controllers[0].signal).then(m => [m, Source.GitHub] as const),
-            fetchModelsData(Source.Gitee, controllers[1].signal).then(m => [m, Source.Gitee] as const)
+            fetchModelsData(Source.Official, controllers[1].signal).then(m => [m, Source.Official] as const)
         ]);
         controllers.forEach(c => c.abort());
         const modelsLastUpdated = Date.now();
@@ -340,8 +340,8 @@ example.com (匹配 example.com 和 www.example.com)"
                     <DropdownMenuItem onClick={() => fetchModelsAndPersist(Source.GitHub)}>
                       从 GitHub 更新
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => fetchModelsAndPersist(Source.Gitee)}>
-                      从 Gitee 更新
+                    <DropdownMenuItem onClick={() => fetchModelsAndPersist(Source.Official)}>
+                      从官网更新
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

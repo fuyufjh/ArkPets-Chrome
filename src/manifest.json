@@ -14,7 +14,7 @@
   },
   "host_permissions": [
     "https://raw.githubusercontent.com/*",
-    "https://gitee.com/fuyufjh/Ark-Models/raw/*"
+    "https://arkpets.ericfu.me/*"
   ],
   "action": {
     "default_popup": "index.html"
