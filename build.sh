@@ -73,6 +73,9 @@ elif [ "$TARGET" = "firefox" ]; then
     echo "Modifying manifest.json for Firefox..."
     # Add-on names cannot contain the Mozilla or Firefox trademarks :D
     sed_in_place 's/ Chrome//g' dist/manifest.json
+
+    echo "Creating source code archive for Firefox..."
+    git ls-files --recurse-submodules | zip source_code.zip -@
 fi
 
 # Create zip file with version number
