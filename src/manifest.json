@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ArkPets Chrome",
   "description": "Shows Arknights characters on web pages",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "permissions": [
     "storage"
   ],
