@@ -2,6 +2,9 @@ ArkPets Chrome Extension
 ==============
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/laeififkebmljoilogkbjkgeojbjlebl)](https://chromewebstore.google.com/detail/laeififkebmljoilogkbjkgeojbjlebl)
+[![Mozilla Add-on Version](https://img.shields.io/amo/v/arkpets)](https://addons.mozilla.org/addon/arkpets/)
+[![Microsoft Edge Add-on Version](https://img.shields.io/badge/dynamic/json?label=edge%20add-on&prefix=v&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fndfompmmhblphdgdcphajfdighkfpbei)](
+https://microsoftedge.microsoft.com/addons/detail/ndfompmmhblphdgdcphajfdighkfpbei)
 
 基于 [ArkPets-Web](https://github.com/fuyufjh/ArkPets-Web) 开发的明日方舟桌宠 Chrome 扩展，可以把 2D 干员模型显示在任意网页上。
 
