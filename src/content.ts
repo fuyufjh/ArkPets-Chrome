@@ -49,6 +49,14 @@ async function setup() {
     setAllowInteraction(settings.allowInteraction);
   }
 
+  // Hide characters when page enters fullscreen
+  document.addEventListener('fullscreenchange', () => {
+    const isFullscreen = !!document.fullscreenElement;
+    document.querySelectorAll<HTMLCanvasElement>('.arkpets-canvas').forEach(canvas => {
+      canvas.style.display = isFullscreen ? 'none' : '';
+    });
+  });
+
   // Changes in setting page will trigger this
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.characters) {
