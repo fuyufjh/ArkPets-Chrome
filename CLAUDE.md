@@ -51,6 +51,8 @@ Storage keys: `characters` (array of `CharacterItem`), `allowInteraction` (bool)
 
 `arkpets` is a local package (`file:ArkPets-Web`) — a git submodule at `ArkPets-Web/`. It provides the `Character` class (Spine 2D renderer) and `showContextMenu`. The submodule must be built before the extension can be built.
 
+The `Character` class exposes limited public methods (`loadCharacterModel`, `fadeOut`, `destroy`, `setAllowInteract`, `getModel`, `getCanvasId`). It does not expose pause/hide methods. To control visibility from `content.ts`, query by the `.arkpets-canvas` CSS class that `Character` adds to every canvas element.
+
 ### Multi-browser targeting
 
 `build.sh` runs `npm run build` then patches `dist/manifest.json` for Edge (renames "Chrome" → "Edge") or Firefox (strips " Chrome" from name). The manifest includes `browser_specific_settings.gecko` for Firefox compatibility. The code uses `webextension-polyfill` for cross-browser API compatibility.
